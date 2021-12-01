@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.superzzguo.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":"default"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="概述Docker File被用来构建一个自定义的image镜像，就像把镜像的构建中每一步添加的配置、文件等都写入一个配置文件中，在构建自定义镜像时能根据这个配置文件来配置相应的信息。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker File的常用指令">
+<meta property="og:url" content="http://www.superzzguo.com/2021/08/29/Docker_file/index.html">
+<meta property="og:site_name" content="得闲饮茶の阿伯">
+<meta property="og:description" content="概述Docker File被用来构建一个自定义的image镜像，就像把镜像的构建中每一步添加的配置、文件等都写入一个配置文件中，在构建自定义镜像时能根据这个配置文件来配置相应的信息。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.superzzguo.com/2021/08/29/Docker_file/1.png">
+<meta property="og:image" content="http://www.superzzguo.com/2021/08/29/Docker_file/2.png">
+<meta property="og:image" content="http://www.superzzguo.com/2021/08/29/Docker_file/3.png">
+<meta property="article:published_time" content="2021-08-29T03:26:22.536Z">
+<meta property="article:modified_time" content="2021-09-14T05:57:25.090Z">
+<meta property="article:author" content="ZZGuo">
+<meta property="article:tag" content="Docker">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.superzzguo.com/2021/08/29/Docker_file/1.png">
+
+<link rel="canonical" href="http://www.superzzguo.com/2021/08/29/Docker_file/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Docker File的常用指令 | 得闲饮茶の阿伯</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">得闲饮茶の阿伯</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">三点半饮杯啡，食个包</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">13</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">9</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">18</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.superzzguo.com/2021/08/29/Docker_file/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpeg">
+      <meta itemprop="name" content="ZZGuo">
+      <meta itemprop="description" content="Java阿伯的吹水地方">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="得闲饮茶の阿伯">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Docker File的常用指令
+        </h1>
+
+        <div class="post-meta">
+
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-08-29 11:26:22" itemprop="dateCreated datePublished" datetime="2021-08-29T11:26:22+08:00">2021-08-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-14 13:57:25" itemprop="dateModified" datetime="2021-09-14T13:57:25+08:00">2021-09-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%BF%90%E7%BB%B4%E9%83%A8%E7%BD%B2/" itemprop="url" rel="index"><span itemprop="name">运维部署</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p><code>Docker File</code>被用来构建一个自定义的image镜像，就像把镜像的构建中每一步添加的配置、文件等都写入一个配置文件中，在构建自定义镜像时能根据这个配置文件来配置相应的信息。</p>
+<span id="more"></span>
+
+<h2 id="指令详解"><a href="#指令详解" class="headerlink" title="指令详解"></a>指令详解</h2><h3 id="FROM-指定基础镜像"><a href="#FROM-指定基础镜像" class="headerlink" title="FROM 指定基础镜像"></a><code>FROM</code> 指定基础镜像</h3><h3 id="RUN-用来执行命令行命令"><a href="#RUN-用来执行命令行命令" class="headerlink" title="RUN  用来执行命令行命令"></a><code>RUN</code>  用来执行命令行命令</h3><h3 id="COPY-复制文件"><a href="#COPY-复制文件" class="headerlink" title="COPY 复制文件"></a><code>COPY</code> 复制文件</h3><p>格式:</p>
+<ul>
+<li><p><code>COPY &lt;源路径&gt;...&lt;目标路径&gt;</code></p>
+</li>
+<li><p><code>COPY [&quot;&lt;源路径1&gt;&quot;,... &quot;&lt;目标路径&gt;&quot;]</code></p>
+</li>
+</ul>
+<p><code>COPY</code>指令会从构建的上下文目录中的<code>&lt;源路径&gt;</code>，复制内容到<code>&lt;目标路径&gt;</code></p>
+<blockquote>
+<p>注意⚠️: <code>COPY</code>会保留源文件的元数据，包括读写权限等</p>
+</blockquote>
+<h3 id="ADD-比COPY高级的复制文件"><a href="#ADD-比COPY高级的复制文件" class="headerlink" title="ADD 比COPY高级的复制文件"></a><code>ADD</code> 比COPY高级的复制文件</h3><p>相对于<code>COPY</code>的文件复制功能，<code>ADD</code>中：</p>
+<ul>
+<li><code>&lt;源路径&gt;</code>可以是一个<code>URL</code>，Docker引擎会尝试从链接下载数据文件，并自动设置文件的权限600，<br>如果需要修改文件的权限，则还需要添加一层RUN来修改； </li>
+<li>如果<code>&lt;源路径&gt;</code>是一份压缩文件，则<code>ADD</code>会尝试解压这份压缩文件并添加到<code>&lt;目标路径&gt;</code>中</li>
+</ul>
+<blockquote>
+<p>不需要自动解压缩的情景下更推荐使用<code>COPY</code></p>
+</blockquote>
+<h3 id="CMD-在容器中启动命令"><a href="#CMD-在容器中启动命令" class="headerlink" title="CMD 在容器中启动命令"></a><code>CMD</code> 在容器中启动命令</h3><p>Docker在主机上的体现不是一个虚拟机，而是一个进程，而<code>CMD</code>指令就是用于指定<strong>默认</strong>(后面要考 doge.jpg)容器主进程的启动命令</p>
+<p>在镜像运行时可以指定新的命令来替代镜像设置中的这个默认命令</p>
+<p><code>CMD</code>的格式有如下几种：</p>
+<ul>
+<li><code>shell</code> 格式：CMD &lt;命令&gt;</li>
+<li><code>exec</code> 格式：CMD [“可执行文件”, “参数1”, “参数2”…]</li>
+<li><code>参数列表</code> 格式：CMD [“参数1”, “参数2”…]。在指定了<code>ENTRYPOINT</code>指令后，用<code>CMD</code>指定具体的参数。</li>
+</ul>
+<blockquote>
+<p>指令格式上更推荐使用<code>exec</code> 格式，其中的命令会被解析为JSON数组，注意一定要用双引号” 而不是单引号’</p>
+</blockquote>
+<h3 id="ENTRYPOINT-命令入口点"><a href="#ENTRYPOINT-命令入口点" class="headerlink" title="ENTRYPOINT 命令入口点"></a><code>ENTRYPOINT</code> 命令入口点</h3><p><code>ENTRYPOINT</code>顾名思义，命令入口点</p>
+<p>格式：<br><code>ENTRYPOINT [&quot;executable&quot;, &quot;param1&quot;, &quot;param2&quot;] </code></p>
+<p><code>ENTRYPOINT command param1 param2</code></p>
+<p>第一种格式下能接受到来自<code>CMD</code>和<code>Docker run</code>后添加的参数，优先接受<code>Docker run</code>的参数</p>
+<p>第二种格式下无法接受来自<code>CMD</code>和<code>Docker run</code>添加的参数</p>
+<p>更推荐使用第一种格式</p>
+<h3 id="ENV-设置环境变量"><a href="#ENV-设置环境变量" class="headerlink" title="ENV 设置环境变量"></a><code>ENV</code> 设置环境变量</h3><p><code>ENV</code>用来设置环境变量，能供后续的指令使用</p>
+<p><code>ENV</code>格式有两种：</p>
+<ul>
+<li><code>ENV &lt;key&gt; &lt;value&gt;</code></li>
+<li><code>ENV &lt;key1&gt;=&lt;value1&gt; &lt;key2&gt;=&lt;value2&gt;...</code></li>
+</ul>
+<h3 id="ARG-构建参数"><a href="#ARG-构建参数" class="headerlink" title="ARG 构建参数"></a><code>ARG</code> 构建参数</h3><p><code>ARG</code>用来构建参数名称和定义默认值，其和<code>ENV</code>环境变量不同的是在容器运行时，是不存在这些<code>ARG</code>构建的参数的，但可以在<code>Dockerhistory</code>中查看</p>
+<p>格式：<br><code>ARG &lt;参数名&gt;[=&lt;默认值&gt;]</code></p>
+<p>关于<code>ARG</code>的使用细节，可以参考如下：</p>
+<pre><code>ARG DOCKER_USERNAME=library
+
+FROM $&#123;DOCKER_USERNAME&#125;/alpine
+
+# 在FROM 之后使用变量，必须在每个阶段分别指定
+ARG DOCKER_USERNAME=library
+
+RUN set -x ; echo $&#123;DOCKER_USERNAME&#125;
+
+FROM $&#123;DOCKER_USERNAME&#125;/alpine
+
+# 在FROM 之后使用变量，必须在每个阶段分别指定
+ARG DOCKER_USERNAME=library
+
+RUN set -x ; echo $&#123;DOCKER_USERNAME&#125;
+</code></pre>
+<h3 id="VOLUME-构建匿名挂载卷"><a href="#VOLUME-构建匿名挂载卷" class="headerlink" title="VOLUME 构建匿名挂载卷"></a><code>VOLUME</code> 构建匿名挂载卷</h3><p>适用场景，在例如数据库等动态数据读写较多和需要保存的情况下，应该将数据保存在容器的外部</p>
+<p>在Docker File中添加VOLUME是以防用户在<code>Docker run</code>中不指定挂载，应用正常运行的时候不会在容器中写入大量的数据</p>
+<p>Docker挂载卷默认保存地址是在 <code>var/lib/docker/volumes</code> 下</p>
+<p>格式：</p>
+<ul>
+<li><code>VOLUME [&quot;&lt;路径1&gt;&quot;, &quot;&lt;路径2&gt;&quot;...]</code></li>
+<li><code>VOLUME &lt;路径&gt;</code></li>
+</ul>
+<h3 id="EXPOSE-声明端口"><a href="#EXPOSE-声明端口" class="headerlink" title="EXPOSE 声明端口"></a><code>EXPOSE</code> 声明端口</h3><p>这里的声明端口只是推荐使用端口，实际上并不会在<code>Docker run</code>时开启这个端口，在用户使用<code>-P</code>随机指定端口时候，会自动随机选择一个宿主机端口映射到<code>EXPOSE</code>声明的端口</p>
+<p>一个例子:</p>
+<p>这是tomcat镜像中的dockerfile声明的一个端口<br><img src="/2021/08/29/Docker_file/1.png"><br>在docker中添加<code>-P</code>启动三个tomcat容器<br><img src="/2021/08/29/Docker_file/2.png"><br>可以看到宿主机的端口都不约而同的映射到了Expose中的8080端口</p>
+<h3 id="WORKDIR-指定工作目录"><a href="#WORKDIR-指定工作目录" class="headerlink" title="WORKDIR 指定工作目录"></a><code>WORKDIR</code> 指定工作目录</h3><p><code>WORKDIR</code>指令能使后续各层的当前目录都会被改为指定工作目录</p>
+<p>格式：<br><code>WORKDIR &lt;工作目录路径&gt;</code></p>
+<h3 id="USER-指定当前用户"><a href="#USER-指定当前用户" class="headerlink" title="USER 指定当前用户"></a><code>USER</code> 指定当前用户</h3><p>切换到事先建立好的指定用户，和<code>WORKDIR</code>指令一样能对后续各层产生影响</p>
+<p>格式：<br><code>USER &lt;用户名&gt;[:&lt;用户组&gt;]</code></p>
+<h3 id="HEALTHCHECK-健康检查"><a href="#HEALTHCHECK-健康检查" class="headerlink" title="HEALTHCHECK 健康检查"></a><code>HEALTHCHECK</code> 健康检查</h3><p>能判断容器的状态是否正常</p>
+<p>格式：</p>
+<ul>
+<li><p><code>HEALTHCHECK [选项] CMD &lt;命令&gt;</code>：设置检查容器健康状况的命令</p>
+<ul>
+<li><code>--interval=&lt;间隔&gt;</code>：两次健康检查的间隔，默认为 30 秒；</li>
+<li><code>--timeout=&lt;时长&gt;</code>：健康检查命令运行超时时间，如果超过这个时间，本次健康检查就被视为失败，默认 30 秒；</li>
+<li><code>--retries=&lt;次数&gt;</code>：当连续失败指定次数后，则将容器状态视为 unhealthy，默认 3 次。</li>
+</ul>
+</li>
+<li><p><code>HEALTHCHECK NONE</code>：如果基础镜像有健康检查指令，使用这行可以屏蔽掉其健康检查指令</p>
+</li>
+</ul>
+<p>这是不添加<code>HEALTHCHECK</code>指令时候，只能通过判断<strong>容器主进程是否退出</strong>来判断<strong>容器状态是否异常</strong><br><img src="/2021/08/29/Docker_file/3.png"><br>当容器因为死锁或者死循环而进程不退出时，依然无法辨别容器是否异常</p>
+<p>使用<code>HEALTHCHECK</code>后</p>
+<ul>
+<li>容器启动时，最初的状态为 <code>(health: starting)</code></li>
+<li>过几秒后，健康状态变化为了 <code>(healthy)</code></li>
+<li>健康检查连续失败超过了重试次数，状态就会变为<code>(unhealthy)</code></li>
+</ul>
+<h3 id="ONBUILD-辅助构建镜像"><a href="#ONBUILD-辅助构建镜像" class="headerlink" title="ONBUILD 辅助构建镜像"></a><code>ONBUILD</code> 辅助构建镜像</h3><p>格式：<br><code>ONBUILD &lt;其它指令&gt;</code> </p>
+<p>当以此镜像为基础镜像，去构建下一级镜像时(FROM xxx)，<code>ONBUILD</code>后面的指令才会被执行</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZZGuo
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://www.superzzguo.com/2021/08/29/Docker_file/" title="Docker File的常用指令">http://www.superzzguo.com/2021/08/29/Docker_file/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Docker/" rel="tag"># Docker</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/08/11/Docker_volume_mount/" rel="prev" title="谈谈Docker的卷挂载">
+      <i class="fa fa-chevron-left"></i> 谈谈Docker的卷挂载
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/08/30/Mysql_JDBC/" rel="next" title="JDBC学习记录">
+      JDBC学习记录 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E4%BB%A4%E8%AF%A6%E8%A7%A3"><span class="nav-number">2.</span> <span class="nav-text">指令详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#FROM-%E6%8C%87%E5%AE%9A%E5%9F%BA%E7%A1%80%E9%95%9C%E5%83%8F"><span class="nav-number">2.1.</span> <span class="nav-text">FROM 指定基础镜像</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RUN-%E7%94%A8%E6%9D%A5%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%91%BD%E4%BB%A4"><span class="nav-number">2.2.</span> <span class="nav-text">RUN  用来执行命令行命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#COPY-%E5%A4%8D%E5%88%B6%E6%96%87%E4%BB%B6"><span class="nav-number">2.3.</span> <span class="nav-text">COPY 复制文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ADD-%E6%AF%94COPY%E9%AB%98%E7%BA%A7%E7%9A%84%E5%A4%8D%E5%88%B6%E6%96%87%E4%BB%B6"><span class="nav-number">2.4.</span> <span class="nav-text">ADD 比COPY高级的复制文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CMD-%E5%9C%A8%E5%AE%B9%E5%99%A8%E4%B8%AD%E5%90%AF%E5%8A%A8%E5%91%BD%E4%BB%A4"><span class="nav-number">2.5.</span> <span class="nav-text">CMD 在容器中启动命令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ENTRYPOINT-%E5%91%BD%E4%BB%A4%E5%85%A5%E5%8F%A3%E7%82%B9"><span class="nav-number">2.6.</span> <span class="nav-text">ENTRYPOINT 命令入口点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ENV-%E8%AE%BE%E7%BD%AE%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-number">2.7.</span> <span class="nav-text">ENV 设置环境变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ARG-%E6%9E%84%E5%BB%BA%E5%8F%82%E6%95%B0"><span class="nav-number">2.8.</span> <span class="nav-text">ARG 构建参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#VOLUME-%E6%9E%84%E5%BB%BA%E5%8C%BF%E5%90%8D%E6%8C%82%E8%BD%BD%E5%8D%B7"><span class="nav-number">2.9.</span> <span class="nav-text">VOLUME 构建匿名挂载卷</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EXPOSE-%E5%A3%B0%E6%98%8E%E7%AB%AF%E5%8F%A3"><span class="nav-number">2.10.</span> <span class="nav-text">EXPOSE 声明端口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WORKDIR-%E6%8C%87%E5%AE%9A%E5%B7%A5%E4%BD%9C%E7%9B%AE%E5%BD%95"><span class="nav-number">2.11.</span> <span class="nav-text">WORKDIR 指定工作目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#USER-%E6%8C%87%E5%AE%9A%E5%BD%93%E5%89%8D%E7%94%A8%E6%88%B7"><span class="nav-number">2.12.</span> <span class="nav-text">USER 指定当前用户</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HEALTHCHECK-%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5"><span class="nav-number">2.13.</span> <span class="nav-text">HEALTHCHECK 健康检查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ONBUILD-%E8%BE%85%E5%8A%A9%E6%9E%84%E5%BB%BA%E9%95%9C%E5%83%8F"><span class="nav-number">2.14.</span> <span class="nav-text">ONBUILD 辅助构建镜像</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+
+
+      <div class="site-overview-wrap sidebar-panel">
+
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZZGuo"
+      src="/images/head.jpeg">
+  <p class="site-author-name" itemprop="name">ZZGuo</p>
+  <div class="site-description" itemprop="description">Java阿伯的吹水地方</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Super-ZZGuo" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Super-ZZGuo" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+
+      </div>
+      <div>
+        <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=1824020871&auto=1&height=66"></iframe>
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZZGuo</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='150' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":200,"height":400},"mobile":{"show":true},"log":false});</script></body>
+</html>

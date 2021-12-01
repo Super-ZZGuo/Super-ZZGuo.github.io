@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.superzzguo.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":"default"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="JDBC 这里记录我学习JDBC连接数据库操作时的笔记和知识总结，方便后续的复习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JDBC学习记录">
+<meta property="og:url" content="http://www.superzzguo.com/2021/08/30/Mysql_JDBC/index.html">
+<meta property="og:site_name" content="得闲饮茶の阿伯">
+<meta property="og:description" content="JDBC 这里记录我学习JDBC连接数据库操作时的笔记和知识总结，方便后续的复习">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.superzzguo.com/2021/08/30/Mysql_JDBC/JDBC_1.png">
+<meta property="og:image" content="http://www.superzzguo.com/2021/08/30/Mysql_JDBC/JDBC_2.png">
+<meta property="og:image" content="http://www.superzzguo.com/2021/08/30/Mysql_JDBC/JDBC_3.png">
+<meta property="og:image" content="http://www.superzzguo.com/2021/08/30/Mysql_JDBC/JDBC_4.png">
+<meta property="og:image" content="http://www.superzzguo.com/2021/08/30/Mysql_JDBC/JDBC_5.png">
+<meta property="article:published_time" content="2021-08-30T04:15:39.189Z">
+<meta property="article:modified_time" content="2021-09-02T01:22:02.667Z">
+<meta property="article:author" content="ZZGuo">
+<meta property="article:tag" content="JDBC">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.superzzguo.com/2021/08/30/Mysql_JDBC/JDBC_1.png">
+
+<link rel="canonical" href="http://www.superzzguo.com/2021/08/30/Mysql_JDBC/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>JDBC学习记录 | 得闲饮茶の阿伯</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">得闲饮茶の阿伯</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">三点半饮杯啡，食个包</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">13</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">9</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">18</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.superzzguo.com/2021/08/30/Mysql_JDBC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpeg">
+      <meta itemprop="name" content="ZZGuo">
+      <meta itemprop="description" content="Java阿伯的吹水地方">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="得闲饮茶の阿伯">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JDBC学习记录
+        </h1>
+
+        <div class="post-meta">
+
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-08-30 12:15:39" itemprop="dateCreated datePublished" datetime="2021-08-30T12:15:39+08:00">2021-08-30</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-09-02 09:22:02" itemprop="dateModified" datetime="2021-09-02T09:22:02+08:00">2021-09-02</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="JDBC"><a href="#JDBC" class="headerlink" title="JDBC"></a>JDBC</h1><blockquote>
+<p>这里记录我学习JDBC连接数据库操作时的笔记和知识总结，方便后续的复习</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="为什么需要JDBC"><a href="#为什么需要JDBC" class="headerlink" title="为什么需要JDBC"></a>为什么需要JDBC</h2><p><img src="/2021/08/30/Mysql_JDBC/JDBC_1.png"></p>
+<p>没有JDBC之前，程序员们操作不同数据库时，都是我们通过代码去实现的。</p>
+<p>而连接MySQL的代码，和连接Oracle的代码是不同的；</p>
+<p>这就导致了，我们<strong>更换数据库时就要去修改代码</strong>，代码的<strong>可复用性</strong>和<strong>移植性</strong>就显得很低了。</p>
+<h2 id="什么是JDBC"><a href="#什么是JDBC" class="headerlink" title="什么是JDBC"></a>什么是JDBC</h2><ul>
+<li><p>JDBC(Java Database Connectivity)是一个独立于特定数据库管理系统、通用的SQL数据库存取和操作的<strong>公共接口</strong>（一组API），<br>定义了用来访问数据库的标准Java类库，（<strong>java.sql,javax.sql</strong>）使用这些类库可以以一种<strong>标准</strong>的方法、方便地访问数据库资源。</p>
+</li>
+<li><p>JDBC为访问不同的数据库提供了一种<strong>统一的途径</strong>，为开发者屏蔽了一些细节问题。</p>
+</li>
+<li><p>JDBC的目标是使Java程序员使用JDBC可以连接任何<strong>提供了JDBC驱动程序</strong>的数据库系统，这样就使得程序员无需对特定的数据库系统的特点有过多的了解，从而大大简化和加快了开发过程。</p>
+</li>
+</ul>
+<blockquote>
+<p>说人话就是提供了一个<strong>通用的接口</strong>(<strong>标准</strong>)来<strong>操作数据库</strong>，在程序中加载的类都是<strong>Java原生提供的类</strong>，<br>并不包含外部引用的类，提高了代码的<strong>可复用性</strong>和<strong>移植性</strong>。</p>
+</blockquote>
+<p><img src="/2021/08/30/Mysql_JDBC/JDBC_2.png"></p>
+<ul>
+<li>JDBC接口（API）包括两个层次：<ul>
+<li><strong>面向应用的API</strong>：Java API，抽象接口，供应用程序开发人员使用（连接数据库，执行SQL语句，获得结果）。</li>
+<li> <strong>面向数据库的API</strong>：Java Driver API，供开发商开发数据库驱动程序用。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p><strong>JDBC是Sun公司(那时还没被Oracle收购)提供一套用于数据库操作的接口，java程序员只需要面向这套接口编程即可。</strong></p>
+<p><strong>不同的数据库厂商，需要针对这套接口，提供不同实现。不同的实现的集合，即为不同数据库的驱动。                                                                ————面向接口编程</strong></p>
+</blockquote>
+<h2 id="JDBC的功能实现"><a href="#JDBC的功能实现" class="headerlink" title="JDBC的功能实现"></a>JDBC的功能实现</h2><p><img src="/2021/08/30/Mysql_JDBC/JDBC_3.png"><br>步骤简单理解为就是:</p>
+<ul>
+<li><p>连接数据库</p>
+</li>
+<li><p>执行sql语句</p>
+</li>
+<li><p>如果是<strong>查询</strong>则通过Result对象来接受<strong>结果数据</strong>(其中得提前创建接收<strong>对应</strong>数据的Java对象)</p>
+</li>
+<li><p>断开数据库连接</p>
+</li>
+</ul>
+<p>其中，</p>
+<ul>
+<li><p>数据库的连接等由程序员使用<strong>数据库连接池</strong>完成</p>
+</li>
+<li><p>执行sql语句由程序员使用<strong>JDBC工具类库实现CUDR操作</strong>完成</p>
+</li>
+</ul>
+<p>当然，数据库的连接和断开以及CUDR操作可以自己写，但是这也存在一些弊端，下面会介绍道。</p>
+<h2 id="数据库连接池"><a href="#数据库连接池" class="headerlink" title="数据库连接池"></a>数据库连接池</h2><h3 id="JDBC数据库连接池的必要性"><a href="#JDBC数据库连接池的必要性" class="headerlink" title="JDBC数据库连接池的必要性"></a>JDBC数据库连接池的必要性</h3><ul>
+<li><p>在使用开发基于数据库的web程序时，传统的模式基本是按以下步骤：</p>
+<ul>
+<li><strong>在主程序（如servlet、beans）中建立数据库连接</strong></li>
+<li><strong>进行sql操作</strong></li>
+<li><strong>断开数据库连接</strong></li>
+</ul>
+</li>
+<li><p>这种模式开发，存在的问题:</p>
+<ul>
+<li>普通的JDBC数据库连接使用 DriverManager 来获取，每次向数据库建立连接的时候都要将 Connection 加载到内存中，再验证用户名和密码(得花费0.05s～1s的时间)。需要数据库连接的时候，就向数据库要求一个，执行完成后再断开连接。这样的方式将会消耗大量的资源和时间。<strong>数据库的连接资源并没有得到很好的重复利用。</strong>若同时有几百人甚至几千人在线，频繁的进行数据库连接操作将占用很多的系统资源，严重的甚至会造成服务器的崩溃。</li>
+<li><strong>对于每一次数据库连接，使用完后都得断开。</strong>否则，如果程序出现异常而未能关闭，将会导致数据库系统中的内存泄漏，最终将导致重启数据库。（回忆：何为Java的内存泄漏？）</li>
+<li><strong>这种开发不能控制被创建的连接对象数</strong>，系统资源会被毫无顾及的分配出去，如连接过多，也可能导致内存泄漏，服务器崩溃。</li>
+</ul>
+</li>
+</ul>
+<h3 id="数据库连接池技术"><a href="#数据库连接池技术" class="headerlink" title="数据库连接池技术"></a>数据库连接池技术</h3><ul>
+<li><p>为解决传统开发中的数据库连接问题，可以采用数据库连接池技术。</p>
+</li>
+<li><p><strong>数据库连接池的基本思想</strong>：就是为数据库连接建立一个“缓冲池”。预先在缓冲池中放入一定数量的连接，当需要建立数据库连接时，只需从“缓冲池”中取出一个，使用完毕之后再放回去。</p>
+</li>
+<li><p><strong>数据库连接池</strong>负责分配、管理和释放数据库连接，它<strong>允许应用程序重复使用一个现有的数据库连接，而不是重新建立一个</strong>。</p>
+</li>
+<li><p>数据库连接池在初始化时将创建一定数量的数据库连接放到连接池中，这些数据库连接的数量是由<strong>最小数据库连接数来设定</strong>的。无论这些数据库连接是否被使用，连接池都将一直保证至少拥有这么多的连接数量。连接池的<strong>最大数据库连接数量</strong>限定了这个连接池能占有的最大连接数，当应用程序向连接池请求的连接数超过最大连接数量时，这些请求将被加入到等待队列中。<br><img src="/2021/08/30/Mysql_JDBC/JDBC_4.png"></p>
+</li>
+<li><p><strong>工作原理：</strong><br><img src="/2021/08/30/Mysql_JDBC/JDBC_5.png"></p>
+</li>
+<li><p><strong>数据库连接池技术的优点</strong></p>
+<p><strong>1. 资源重用</strong></p>
+<p>由于数据库连接得以重用，避免了频繁创建，释放连接引起的大量性能开销。在减少系统消耗的基础上，另一方面也增加了系统运行环境的平稳性。</p>
+<p><strong>2. 更快的系统反应速度</strong></p>
+<p>数据库连接池在初始化过程中，往往已经创建了若干数据库连接置于连接池中备用。此时连接的初始化工作均已完成。对于业务请求处理而言，直接利用现有可用连接，避免了数据库连接初始化和释放过程的时间开销，从而减少了系统的响应时间</p>
+<p><strong>3. 新的资源分配手段</strong></p>
+<p>对于多应用共享同一数据库的系统而言，可在应用层通过数据库连接池的配置，实现某一应用最大可用数据库连接数的限制，避免某一应用独占所有的数据库资源</p>
+<p><strong>4. 统一的连接管理，避免数据库连接泄漏</strong></p>
+<p>在较为完善的数据库连接池实现中，可根据预先的占用超时设定，强制回收被占用连接，从而避免了常规数据库连接操作中可能出现的资源泄露</p>
+</li>
+</ul>
+<h3 id="多种开源的数据库连接池"><a href="#多种开源的数据库连接池" class="headerlink" title="多种开源的数据库连接池"></a>多种开源的数据库连接池</h3><ul>
+<li><p>JDBC 的数据库连接池使用 javax.sql.DataSource 来表示，DataSource 只是一个接口，该接口通常由服务器(Weblogic, WebSphere, Tomcat)提供实现，也有一些开源组织提供实现：</p>
+<ul>
+<li><strong>DBCP</strong> 是Apache提供的数据库连接池。tomcat 服务器自带dbcp数据库连接池。<strong>速度相对c3p0较快</strong>，但因自身存在BUG，Hibernate3已不再提供支持。</li>
+<li><strong>C3P0</strong> 是一个开源组织提供的一个数据库连接池，<strong>速度相对较慢，稳定性还可以。</strong>hibernate官方推荐使用</li>
+<li><strong>Proxool</strong> 是sourceforge下的一个开源项目数据库连接池，有监控连接池状态的功能，<strong>稳定性较c3p0差一点</strong></li>
+<li><strong>BoneCP</strong> 是一个开源组织提供的数据库连接池，速度快</li>
+<li><strong>Druid</strong> 是阿里提供的数据库连接池，据说是集DBCP 、C3P0 、Proxool 优点于一身的数据库连接池，但是速度不确定是否有BoneCP快</li>
+</ul>
+</li>
+<li><p>DataSource 通常被称为数据源，它包含连接池和连接池管理两个部分，习惯上也经常把 DataSource 称为连接池</p>
+</li>
+<li><p><strong>DataSource用来取代DriverManager来获取Connection，获取速度快，同时可以大幅度提高数据库访问速度。</strong></p>
+</li>
+<li><p>特别注意：</p>
+<ul>
+<li>数据源和数据库连接不同，数据源无需创建多个，它是产生数据库连接的工厂，因此<strong>整个应用只需要一个数据源即可。</strong></li>
+<li>当数据库访问结束后，程序还是像以前一样关闭数据库连接：conn.close(); 但conn.close()并没有关闭数据库的物理连接，它仅仅把数据库连接释放，归还给了数据库连接池。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li>现在主要是使用德鲁伊连接池。</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>一个简单的连接实例:</p>
+</blockquote>
+<pre><code class="java">public class DruidTest &#123;
+
+    @Test
+    public void getConnection() throws Exception&#123;
+
+        Properties pros = new Properties();
+
+        InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream(&quot;druid.properties&quot;);
+
+        //装载配置文件数据
+        pros.load(is);
+        
+        DataSource source = DruidDataSourceFactory.createDataSource(pros);
+
+        Connection conn = source.getConnection();
+
+        System.out.println(conn);
+    &#125;
+&#125;
+</code></pre>
+<p>其中，src下的配置文件为：【druid.properties】</p>
+<pre><code class="java">url=jdbc:mysql://localhost:3306/test?rewriteBatchedStatements=true
+username=root
+password=123456
+driverClassName=com.mysql.jdbc.Driver
+
+</code></pre>
+<ul>
+<li>详细配置参数(在配置文件内添加)：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th><strong>配置</strong></th>
+<th><strong>缺省</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>name</td>
+<td></td>
+<td>配置这个属性的意义在于，如果存在多个数据源，监控的时候可以通过名字来区分开来。   如果没有配置，将会生成一个名字，格式是：”DataSource-” +   System.identityHashCode(this)</td>
+</tr>
+<tr>
+<td>url</td>
+<td></td>
+<td>连接数据库的url，不同数据库不一样。例如：mysql :   jdbc:mysql://10.20.153.104:3306/druid2      oracle :   jdbc:oracle:thin:@10.20.149.85:1521:ocnauto</td>
+</tr>
+<tr>
+<td>username</td>
+<td></td>
+<td>连接数据库的用户名</td>
+</tr>
+<tr>
+<td>password</td>
+<td></td>
+<td>连接数据库的密码。如果你不希望密码直接写在配置文件中，可以使用ConfigFilter。详细看这里：<a target="_blank" rel="noopener" href="https://github.com/alibaba/druid/wiki/%E4%BD%BF%E7%94%A8ConfigFilter">https://github.com/alibaba/druid/wiki/%E4%BD%BF%E7%94%A8ConfigFilter</a></td>
+</tr>
+<tr>
+<td>driverClassName</td>
+<td></td>
+<td>根据url自动识别   这一项可配可不配，如果不配置druid会根据url自动识别dbType，然后选择相应的driverClassName(建议配置下)</td>
+</tr>
+<tr>
+<td>initialSize</td>
+<td>0</td>
+<td>初始化时建立物理连接的个数。初始化发生在显示调用init方法，或者第一次getConnection时</td>
+</tr>
+<tr>
+<td>maxActive</td>
+<td>8</td>
+<td>最大连接池数量</td>
+</tr>
+<tr>
+<td>maxIdle</td>
+<td>8</td>
+<td>已经不再使用，配置了也没效果</td>
+</tr>
+<tr>
+<td>minIdle</td>
+<td></td>
+<td>最小连接池数量</td>
+</tr>
+<tr>
+<td>maxWait</td>
+<td></td>
+<td>获取连接时最大等待时间，单位毫秒。配置了maxWait之后，缺省启用公平锁，并发效率会有所下降，如果需要可以通过配置useUnfairLock属性为true使用非公平锁。</td>
+</tr>
+<tr>
+<td>poolPreparedStatements</td>
+<td>false</td>
+<td>是否缓存preparedStatement，也就是PSCache。PSCache对支持游标的数据库性能提升巨大，比如说oracle。在mysql下建议关闭。</td>
+</tr>
+<tr>
+<td>maxOpenPreparedStatements</td>
+<td>-1</td>
+<td>要启用PSCache，必须配置大于0，当大于0时，poolPreparedStatements自动触发修改为true。在Druid中，不会存在Oracle下PSCache占用内存过多的问题，可以把这个数值配置大一些，比如说100</td>
+</tr>
+<tr>
+<td>validationQuery</td>
+<td></td>
+<td>用来检测连接是否有效的sql，要求是一个查询语句。如果validationQuery为null，testOnBorrow、testOnReturn、testWhileIdle都不会其作用。</td>
+</tr>
+<tr>
+<td>testOnBorrow</td>
+<td>true</td>
+<td>申请连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能。</td>
+</tr>
+<tr>
+<td>testOnReturn</td>
+<td>false</td>
+<td>归还连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能</td>
+</tr>
+<tr>
+<td>testWhileIdle</td>
+<td>false</td>
+<td>建议配置为true，不影响性能，并且保证安全性。申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效。</td>
+</tr>
+<tr>
+<td>timeBetweenEvictionRunsMillis</td>
+<td></td>
+<td>有两个含义： 1)Destroy线程会检测连接的间隔时间2)testWhileIdle的判断依据，详细看testWhileIdle属性的说明</td>
+</tr>
+<tr>
+<td>numTestsPerEvictionRun</td>
+<td></td>
+<td>不再使用，一个DruidDataSource只支持一个EvictionRun</td>
+</tr>
+<tr>
+<td>minEvictableIdleTimeMillis</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>connectionInitSqls</td>
+<td></td>
+<td>物理连接初始化的时候执行的sql</td>
+</tr>
+<tr>
+<td>exceptionSorter</td>
+<td></td>
+<td>根据dbType自动识别   当数据库抛出一些不可恢复的异常时，抛弃连接</td>
+</tr>
+<tr>
+<td>filters</td>
+<td></td>
+<td>属性类型是字符串，通过别名的方式配置扩展插件，常用的插件有：   监控统计用的filter:stat日志用的filter:log4j防御sql注入的filter:wall</td>
+</tr>
+<tr>
+<td>proxyFilters</td>
+<td></td>
+<td>类型是List，如果同时配置了filters和proxyFilters，是组合关系，并非替换关系</td>
+</tr>
+</tbody></table>
+<h2 id="JDBC工具类库实现CUDR操作"><a href="#JDBC工具类库实现CUDR操作" class="headerlink" title="JDBC工具类库实现CUDR操作"></a>JDBC工具类库实现CUDR操作</h2><ul>
+<li>commons-dbutils 是 Apache 组织提供的一个<strong>开源JDBC工具类库</strong>，它是对JDBC的简单封装，学习成本极低，<br>并且使用dbutils能极大简化jdbc编码的工作量，同时也不会影响程序的性能。</li>
+</ul>
+<h3 id="DbUtils类"><a href="#DbUtils类" class="headerlink" title="DbUtils类"></a>DbUtils类</h3><ul>
+<li><p>DbUtils ：提供如关闭连接、装载JDBC驱动程序等常规工作的工具类，里面的所有方法都是静态的。主要方法如下：</p>
+<ul>
+<li><p><strong>public static void close(…) throws java.sql.SQLException</strong>：</p>
+<p>DbUtils类提供了三个重载的关闭方法。这些方法检查所提供的参数是不是NULL，如果不是的话，它们就关闭Connection、Statement和ResultSet。</p>
+</li>
+<li><p><strong>public static void closeQuietly(…)</strong>:</p>
+<p>这一类方法不仅能在Connection、Statement和ResultSet为NULL情况下避免关闭，还能隐藏一些在程序中抛出的SQLEeception。</p>
+</li>
+<li><p><strong>public static void commitAndClose(Connection conn)throws SQLException</strong>：</p>
+<p>用来提交连接的事务，然后关闭连接</p>
+</li>
+<li><p>**public static void commitAndCloseQuietly(Connection conn)**：</p>
+<p>用来提交连接，然后关闭连接，并且在关闭连接时不抛出SQL异常。</p>
+</li>
+<li><p><strong>public static void rollback(Connection conn)throws SQLException</strong>：</p>
+<p>允许conn为null，因为方法内部做了判断</p>
+</li>
+<li><p><strong>public static void rollbackAndClose(Connection conn)throws SQLException</strong>:</p>
+<p>事务的回滚</p>
+</li>
+<li><p><strong>rollbackAndCloseQuietly(Connection)</strong>:</p>
+<p>安静的事务回滚？</p>
+</li>
+<li><p>**public static boolean loadDriver(java.lang.String driverClassName)**：</p>
+<p>这一方装载并注册JDBC驱动程序，如果成功就返回true。使用该方法，你不需要捕捉这个异常ClassNotFoundException。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="QueryRunner类"><a href="#QueryRunner类" class="headerlink" title="QueryRunner类"></a>QueryRunner类</h3><ul>
+<li><p><strong>该类简单化了SQL查询，它与ResultSetHandler组合在一起使用可以完成大部分的数据库操作，能够大大减少编码量。</strong></p>
+</li>
+<li><p>QueryRunner类提供了两个构造器：</p>
+<ul>
+<li>默认的构造器</li>
+<li>需要一个 javax.sql.DataSource 来作参数的构造器</li>
+</ul>
+</li>
+<li><p>QueryRunner类的主要方法：</p>
+<ul>
+<li><p><strong>更新</strong></p>
+<ul>
+<li><p>public int update(Connection conn, String sql, Object… params) throws SQLException:</p>
+<p>用来执行一个更新（插入、更新或删除）操作。</p>
+</li>
+<li><p> ……</p>
+</li>
+</ul>
+</li>
+<li><p><strong>插入</strong></p>
+<ul>
+<li>public <T> T insert(Connection conn,String sql,ResultSetHandler<T> rsh, Object… params) throws SQLException：</T></T></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>  只支持INSERT语句，其中 rsh - The handler used to create the result object from the ResultSet of auto-generated keys.  返回值: An object generated by the handler.即自动生成的键值
+- ....
+</code></pre>
+<ul>
+<li><p><strong>批处理</strong></p>
+<ul>
+<li><p>public int[] batch(Connection conn,String sql,Object[][] params)throws SQLException：</p>
+<p>支持INSERT, UPDATE, or DELETE语句</p>
+</li>
+<li><p>public <T> T insertBatch(Connection conn,String sql,ResultSetHandler<T> rsh,Object[][] params)throws SQLException：</T></T></p>
+<p>只支持INSERT语句</p>
+</li>
+<li><p>…..</p>
+</li>
+</ul>
+</li>
+<li><p><strong>查询</strong></p>
+<ul>
+<li><p>public Object query(Connection conn, String sql, ResultSetHandler rsh,Object… params) throws SQLException：</p>
+<p>执行一个查询操作，在这个查询中，对象数组中的每个元素值被用来作为查询语句的置换参数。该方法会自行处理 PreparedStatement 和 ResultSet 的创建和关闭。</p>
+</li>
+<li><p>……</p>
+</li>
+</ul>
+</li>
+<li><p>一些简单的测试</p>
+<pre><code class="java">//测试插入
+@Test
+public void testInsert() throws SQLException&#123;
+Connection conn = null;
+
+      try &#123;
+          QueryRunner Runner = new QueryRunner();
+
+          conn = JDBCutils.getConnection();
+
+          String sql = &quot;insert into customers(name,email,birth)value(?,?,?)&quot;;
+
+          Runner.update(conn,sql,&quot;杰哥&quot;,&quot;jiege@qq.com&quot;,&quot;2000-11-11&quot;);
+
+      &#125; catch (Exception e) &#123;
+          e.printStackTrace();
+      &#125;
+  &#125;
+</code></pre>
+</li>
+</ul>
+<h3 id="ResultSetHandler接口及实现类"><a href="#ResultSetHandler接口及实现类" class="headerlink" title="ResultSetHandler接口及实现类"></a>ResultSetHandler接口及实现类</h3><ul>
+<li><p>该接口用于处理 java.sql.ResultSet，将数据按要求转换为另一种形式。</p>
+</li>
+<li><p>ResultSetHandler 接口提供了一个单独的方法：Object handle (java.sql.ResultSet .rs)。</p>
+</li>
+<li><p>接口的主要实现类：</p>
+<ul>
+<li><p>ArrayHandler：把结果集中的第一行数据转成对象数组。</p>
+</li>
+<li><p>ArrayListHandler：把结果集中的每一行数据都转成一个数组，再存放到List中。</p>
+</li>
+<li><p><strong>BeanHandler：</strong>将结果集中的第一行数据封装到一个对应的JavaBean实例中。</p>
+</li>
+<li><p><strong>BeanListHandler：</strong>将结果集中的每一行数据都封装到一个对应的JavaBean实例中，存放到List里。</p>
+</li>
+<li><p>ColumnListHandler：将结果集中某一列的数据存放到List中。</p>
+</li>
+<li><p>KeyedHandler(name)：将结果集中的每一行数据都封装到一个Map里，再把这些map再存到一个map里，其key为指定的key。</p>
+</li>
+<li><p><strong>MapHandler：</strong>将结果集中的第一行数据封装到一个Map里，key是列名，value就是对应的值。</p>
+</li>
+<li><p><strong>MapListHandler：</strong>将结果集中的每一行数据都封装到一个Map里，然后再存放到List</p>
+</li>
+<li><p><strong>ScalarHandler：</strong>查询单个值对象</p>
+</li>
+</ul>
+</li>
+<li><p>一些简单的测试</p>
+<pre><code class="java">//测试查询多条记录
+@Test
+public void testQueryList() throws SQLException &#123;
+Connection conn = null;
+try &#123;
+QueryRunner Runner = new QueryRunner();
+
+          conn = JDBCutils.getConnection();
+
+          String sql = &quot;select id ,name,email,birth from Customers where id &lt; ?&quot;;
+
+          BeanListHandler&lt;Customer&gt; handler = new BeanListHandler&lt;Customer&gt;(Customer.class);
+
+          List&lt;Customer&gt; list = Runner.query(conn, sql, handler, 23);
+
+          list.forEach(System.out::println);
+
+      &#125; catch (Exception e) &#123;
+          e.printStackTrace();
+      &#125;
+  &#125;
+</code></pre>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZZGuo
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://www.superzzguo.com/2021/08/30/Mysql_JDBC/" title="JDBC学习记录">http://www.superzzguo.com/2021/08/30/Mysql_JDBC/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/JDBC/" rel="tag"># JDBC</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/08/29/Docker_file/" rel="prev" title="Docker File的常用指令">
+      <i class="fa fa-chevron-left"></i> Docker File的常用指令
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/08/30/Web_servlet/" rel="next" title="Servlet学习记录">
+      Servlet学习记录 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#JDBC"><span class="nav-number">1.</span> <span class="nav-text">JDBC</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81JDBC"><span class="nav-number">1.1.</span> <span class="nav-text">为什么需要JDBC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFJDBC"><span class="nav-number">1.2.</span> <span class="nav-text">什么是JDBC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JDBC%E7%9A%84%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.3.</span> <span class="nav-text">JDBC的功能实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0"><span class="nav-number">1.4.</span> <span class="nav-text">数据库连接池</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#JDBC%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E7%9A%84%E5%BF%85%E8%A6%81%E6%80%A7"><span class="nav-number">1.4.1.</span> <span class="nav-text">JDBC数据库连接池的必要性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0%E6%8A%80%E6%9C%AF"><span class="nav-number">1.4.2.</span> <span class="nav-text">数据库连接池技术</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A4%9A%E7%A7%8D%E5%BC%80%E6%BA%90%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E6%B1%A0"><span class="nav-number">1.4.3.</span> <span class="nav-text">多种开源的数据库连接池</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JDBC%E5%B7%A5%E5%85%B7%E7%B1%BB%E5%BA%93%E5%AE%9E%E7%8E%B0CUDR%E6%93%8D%E4%BD%9C"><span class="nav-number">1.5.</span> <span class="nav-text">JDBC工具类库实现CUDR操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DbUtils%E7%B1%BB"><span class="nav-number">1.5.1.</span> <span class="nav-text">DbUtils类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#QueryRunner%E7%B1%BB"><span class="nav-number">1.5.2.</span> <span class="nav-text">QueryRunner类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ResultSetHandler%E6%8E%A5%E5%8F%A3%E5%8F%8A%E5%AE%9E%E7%8E%B0%E7%B1%BB"><span class="nav-number">1.5.3.</span> <span class="nav-text">ResultSetHandler接口及实现类</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+
+
+      <div class="site-overview-wrap sidebar-panel">
+
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZZGuo"
+      src="/images/head.jpeg">
+  <p class="site-author-name" itemprop="name">ZZGuo</p>
+  <div class="site-description" itemprop="description">Java阿伯的吹水地方</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Super-ZZGuo" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Super-ZZGuo" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+
+      </div>
+      <div>
+        <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86 src="//music.163.com/outchain/player?type=2&id=1824020871&auto=1&height=66"></iframe>
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZZGuo</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='150' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":200,"height":400},"mobile":{"show":true},"log":false});</script></body>
+</html>

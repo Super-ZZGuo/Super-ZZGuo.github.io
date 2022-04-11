@@ -1,6 +1,277 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>集合框架之LinkedList源码阅读</title>
+    <url>/2022/04/11/Collections-PriorityQueue/</url>
+    <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>今天复习了一下排序算法，在看到<code>堆排序</code>时无意想到还有个<code>PriorityQueue</code>没写🤣</p>
+<span id="more"></span>
+
+<h1 id="PriorityQueue解读"><a href="#PriorityQueue解读" class="headerlink" title="PriorityQueue解读"></a>PriorityQueue解读</h1><blockquote>
+<p>今天复习了一下排序算法，在看到<code>堆排序</code>时无意想到还有个<code>PriorityQueue</code>没写🤣</p>
+<p>⚠️该解读是基于JDK8版本，我在翻阅其他博客的时候发现JDK7在一些<strong>无伤大雅</strong>的地方有所不同</p>
+</blockquote>
+<p>废话不多说，开冲！</p>
+<p>PriorityQueue(优先队列)内部基于<strong>数组</strong>实现了一个<strong>最大(小)堆</strong>，保证每次取出的元素都是队列中**值最大(小)**的，其实现了Queue接口，继承AbstractQueue，不允许放入null值</p>
+<p>Java默认构造的是<strong>小顶堆</strong>，如果需要构造<strong>大顶堆</strong>则需要在构造时传入一个<strong>构造器</strong>实现</p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>这里简单介绍一下如何用数组来实现完全二叉树：</p>
+<ul>
+<li>左子树(数组下标) = 父节点(数组下标) * 2 + 1</li>
+<li>右子树(数组下标) = 父节点(数组下标) * 2 + 2</li>
+<li>父节点(数组下标) = (子节点(数组下标) - 1) / 2</li>
+</ul>
+<img src="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-04-11%20%E4%B8%8B%E5%8D%8810.50.53.png" alt="截屏2022-04-11 下午10.50.53" style="zoom:67%;">
+</blockquote>
+<h2 id="内部属性"><a href="#内部属性" class="headerlink" title="内部属性"></a>内部属性</h2><p>朴实无华的默认数组对象</p>
+<pre><code class="java">transient Object[] queue; // non-private to simplify nested class access
+</code></pre>
+<p>朴实无华的默认大小为<code>11</code></p>
+<pre><code class="java">private static final int DEFAULT_INITIAL_CAPACITY = 11;
+</code></pre>
+<p>朴实无华的比较器</p>
+<pre><code class="Java">private final Comparator&lt;? super E&gt; comparator;
+</code></pre>
+<h2 id="构造方法"><a href="#构造方法" class="headerlink" title="构造方法"></a>构造方法</h2><p>下面四种是比较常用的构造方法</p>
+<h4 id="无参构造"><a href="#无参构造" class="headerlink" title="无参构造"></a>无参构造</h4><pre><code class="java">public PriorityQueue() &#123;
+    this(DEFAULT_INITIAL_CAPACITY, null);
+&#125;
+</code></pre>
+<h4 id="指定容量构造"><a href="#指定容量构造" class="headerlink" title="指定容量构造"></a>指定容量构造</h4><pre><code class="java">public PriorityQueue(int initialCapacity) &#123;
+    this(initialCapacity, null);
+&#125;
+</code></pre>
+<h4 id="指定比较器构造"><a href="#指定比较器构造" class="headerlink" title="指定比较器构造"></a>指定比较器构造</h4><pre><code class="java">public PriorityQueue(Comparator&lt;? super E&gt; comparator) &#123;
+    this(DEFAULT_INITIAL_CAPACITY, comparator);
+&#125;
+</code></pre>
+<h4 id="指定容量-比较器构造"><a href="#指定容量-比较器构造" class="headerlink" title="指定容量+比较器构造"></a>指定容量+比较器构造</h4><pre><code class="java">public PriorityQueue(int initialCapacity,
+                     Comparator&lt;? super E&gt; comparator) &#123;
+    // Note: This restriction of at least one is not actually needed,
+    // but continues for 1.5 compatibility
+    if (initialCapacity &lt; 1)
+        throw new IllegalArgumentException();
+    this.queue = new Object[initialCapacity];
+    this.comparator = comparator;
+&#125;
+</code></pre>
+<blockquote>
+<p>还可以通过传入集合对象来构造，这里不做赘述</p>
+</blockquote>
+<h2 id="常用方法"><a href="#常用方法" class="headerlink" title="常用方法"></a>常用方法</h2><h3 id="添加元素"><a href="#添加元素" class="headerlink" title="添加元素"></a>添加元素</h3><p><code>add()</code></p>
+<pre><code class="java">public boolean add(E e) &#123;
+    return offer(e);
+&#125;
+</code></pre>
+<p><code>offer()</code></p>
+<pre><code class="java">public boolean offer(E e) &#123;
+    if (e == null)
+        throw new NullPointerException();
+    modCount++;
+    int i = size;
+    if (i &gt;= queue.length)
+          // 扩容操作
+        grow(i + 1);
+    size = i + 1;
+    if (i == 0)
+        queue[0] = e;
+    else
+          // 添加元素操作
+        siftUp(i, e);
+    return true;
+&#125;
+</code></pre>
+<p>按照顺序来，先看看扩容算法</p>
+<pre><code class="java">private void grow(int minCapacity) &#123;
+    int oldCapacity = queue.length;
+    // Double size if small; else grow by 50%
+      // 旧容量小于64则每次 容量翻倍+2
+      // 旧容量大于64则每次 容量增加50%
+    int newCapacity = oldCapacity + ((oldCapacity &lt; 64) ?
+                                     (oldCapacity + 2) :
+                                     (oldCapacity &gt;&gt; 1));
+    // overflow-conscious code
+      // 判断是否会超出大小
+    // 其中MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8
+    if (newCapacity - MAX_ARRAY_SIZE &gt; 0)
+        newCapacity = hugeCapacity(minCapacity);
+      // 类似ArrayList 再申请一个更大的数组，并将原数组的元素复制过去
+    queue = Arrays.copyOf(queue, newCapacity);
+&#125;
+
+private static int hugeCapacity(int minCapacity) &#123;
+    if (minCapacity &lt; 0) // overflow
+        throw new OutOfMemoryError();
+    return (minCapacity &gt; MAX_ARRAY_SIZE) ?
+        Integer.MAX_VALUE :
+        MAX_ARRAY_SIZE;
+&#125;
+</code></pre>
+<p>再看看添加元素算法</p>
+<pre><code class="java">private void siftUp(int k, E x) &#123;
+    if (comparator != null)
+          // 含有比较器
+        siftUpUsingComparator(k, x);
+    else
+          // 不含比较器
+        siftUpComparable(k, x);
+&#125;
+
+@SuppressWarnings(&quot;unchecked&quot;)
+private void siftUpComparable(int k, E x) &#123;
+    Comparable&lt;? super E&gt; key = (Comparable&lt;? super E&gt;) x;
+    ......
+        if (key.compareTo((E) e) &gt;= 0)
+            break;
+        ......
+&#125;
+
+@SuppressWarnings(&quot;unchecked&quot;)
+private void siftUpUsingComparator(int k, E x) &#123;
+    while (k &gt; 0) &#123;
+        // 父节点(数组下标) = (子节点(数组下标) - 1) / 2
+        int parent = (k - 1) &gt;&gt;&gt; 1;
+        Object e = queue[parent];
+          // 调用比较器方法
+        if (comparator.compare(x, (E) e) &gt;= 0)
+            break;
+        queue[k] = e;
+        k = parent;
+    &#125;
+    queue[k] = x;
+&#125;
+</code></pre>
+<p>考虑到新加入元素可能会破坏<strong>大(小)顶堆</strong>的性质，故从<strong>下标k</strong>开始(或者说是数组元素的最右端)，依次与该点父节点作比较并交换，直到满足<code>key.compareTo((E) e) &gt;= 0</code>或<code>comparator.compare(x, (E) e) &gt;= 0</code>为止，</p>
+<h3 id="获取元素"><a href="#获取元素" class="headerlink" title="获取元素"></a>获取元素</h3><p>按照大(小)顶堆的性质，每次获取的元素都为堆顶元素(数组最左端/下标为0)</p>
+<p><code>Peek()</code></p>
+<pre><code class="Java">public E peek() &#123;
+    return (size == 0) ? null : (E) queue[0];
+&#125;
+</code></pre>
+<h3 id="移除元素"><a href="#移除元素" class="headerlink" title="移除元素"></a>移除元素</h3><p><code>poll()</code> 移除并返回堆顶元素</p>
+<pre><code class="java">public E poll() &#123;
+    if (size == 0)
+        return null;
+    int s = --size;
+    modCount++;
+      // 标记堆顶，用于后续返回该元素
+    E result = (E) queue[0];
+      // 记录数组最右元素
+    E x = (E) queue[s];
+      // 赋null
+    queue[s] = null;
+    if (s != 0)
+          // 维护堆
+        siftDown(0, x);
+    return result;
+&#125;
+</code></pre>
+<p>堆维护 算法</p>
+<pre><code class="java">private void siftDown(int k, E x) &#123;
+    if (comparator != null)
+          //含比较器
+        siftDownUsingComparator(k, x);
+    else
+        // 不含比较器
+        siftDownComparable(k, x);
+&#125;
+
+@SuppressWarnings(&quot;unchecked&quot;)
+private void siftDownComparable(int k, E x) &#123;
+    Comparable&lt;? super E&gt; key = (Comparable&lt;? super E&gt;)x;
+    ......
+        if (right &lt; size &amp;&amp;
+            ((Comparable&lt;? super E&gt;) c).compareTo((E) queue[right]) &gt; 0)
+            c = queue[child = right];
+        if (key.compareTo((E) c) &lt;= 0)
+            break;
+        .......
+&#125;
+
+@SuppressWarnings(&quot;unchecked&quot;)
+private void siftDownUsingComparator(int k, E x) &#123;
+    int half = size &gt;&gt;&gt; 1;
+    while (k &lt; half) &#123;
+          // 左子节点 下标
+        int child = (k &lt;&lt; 1) + 1;
+          // 记录节点元素值
+        Object c = queue[child];
+          // 右子节点 下标
+        int right = child + 1;
+          // 比较子节点中较小的那个(小顶堆)
+        if (right &lt; size &amp;&amp;
+            comparator.compare((E) c, (E) queue[right]) &gt; 0)
+            c = queue[child = right];
+        if (comparator.compare(x, (E) c) &lt;= 0)
+            break;
+        queue[k] = c;
+        k = child;
+    &#125;
+    queue[k] = x;
+&#125;
+</code></pre>
+<p>移除元素流程：</p>
+<ul>
+<li>标记堆顶 用于后续返回元素</li>
+<li>将<strong>数组下标最大元素</strong>(即便完全二叉树最下层、最右边的节点)放置堆顶</li>
+<li>通过堆顶元素与子节点的交换 维护堆<ul>
+<li>维护小顶堆则 交换 较小的子节点</li>
+<li>维护大顶堆则 交换 较大的子节点</li>
+</ul>
+</li>
+</ul>
+<p><code>remove(Object 0)</code> 删除堆中某一指定元素，若有多个则只删除一个</p>
+<p>删除中间某个节点的话无疑会<code>破坏堆的性质</code>,故还需要维护</p>
+<pre><code class="java">public boolean remove(Object o) &#123;
+    // 获取元素对应数组下标
+    int i = indexOf(o);
+    if (i == -1)
+        return false;
+    else &#123;
+        removeAt(i);
+        return true;
+    &#125;
+&#125;
+private E removeAt(int i) &#123;
+        // assert i &gt;= 0 &amp;&amp; i &lt; size;
+        modCount++;
+              // 如果删除元素为最后一个
+              // 则直接删除后 无需维护堆
+        int s = --size;
+        if (s == i) // removed last element
+            queue[i] = null;
+        else &#123;
+              // 若元素不为最后一个
+              // 将最后一个元素插入到i位置
+              // 然后通过siftDown()和siftUp()来调整位置
+            E moved = (E) queue[s];
+            queue[s] = null;
+            siftDown(i, moved);
+            if (queue[i] == moved) &#123;
+                siftUp(i, moved);
+                if (queue[i] != moved)
+                    return moved;
+            &#125;
+        &#125;
+        return null;
+    &#125;
+</code></pre>
+<p>这里找来一张图来理解一下：</p>
+<img src="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-04-11%20%E4%B8%8B%E5%8D%8810.51.52.png" alt="截屏2022-04-11 下午10.51.52" style="zoom:67%;">
+
+
+
+<blockquote>
+<p>参考自：<a href="https://www.cnblogs.com/CarpenterLee/p/5488070.html">https://www.cnblogs.com/CarpenterLee/p/5488070.html</a></p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>JavaCollection</category>
+      </categories>
+      <tags>
+        <tag>JavaCollection</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>集合框架之HashMap&amp;HashSet源码阅读</title>
     <url>/2021/12/01/Collections-HashMap/</url>
     <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p><em>HashMap</em>实现了<em>Map</em>接口，即允许放入<code>key</code>为<code>null</code>的元素，也允许插入<code>value</code>为<code>null</code>的元素。</p>

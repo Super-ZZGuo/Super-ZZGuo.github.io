@@ -22,7 +22,7 @@
 
   <meta name="description" content="概述今天复习了一下排序算法，在看到堆排序时无意想到还有个PriorityQueue没写🤣">
 <meta property="og:type" content="article">
-<meta property="og:title" content="集合框架之LinkedList源码阅读">
+<meta property="og:title" content="集合框架之LinkedList阅读">
 <meta property="og:url" content="http://www.superzzguo.com/2022/04/11/Collections-PriorityQueue/index.html">
 <meta property="og:site_name" content="得闲饮茶の阿伯">
 <meta property="og:description" content="概述今天复习了一下排序算法，在看到堆排序时无意想到还有个PriorityQueue没写🤣">
@@ -30,7 +30,7 @@
 <meta property="og:image" content="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-04-11%20%E4%B8%8B%E5%8D%8810.50.53.png">
 <meta property="og:image" content="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-04-11%20%E4%B8%8B%E5%8D%8810.51.52.png">
 <meta property="article:published_time" content="2022-04-11T14:48:47.781Z">
-<meta property="article:modified_time" content="2022-04-11T14:53:59.697Z">
+<meta property="article:modified_time" content="2022-04-14T03:36:33.619Z">
 <meta property="article:author" content="ZZGuo">
 <meta property="article:tag" content="JavaCollection">
 <meta name="twitter:card" content="summary">
@@ -49,7 +49,7 @@
   };
 </script>
 
-  <title>集合框架之LinkedList源码阅读 | 得闲饮茶の阿伯</title>
+  <title>集合框架之LinkedList阅读 | 得闲饮茶の阿伯</title>
   
 
 
@@ -135,7 +135,7 @@
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">19</span></a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">20</span></a>
 
   </li>
         <li class="menu-item menu-item-about">
@@ -207,7 +207,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          集合框架之LinkedList源码阅读
+          集合框架之LinkedList阅读
         </h1>
 
         <div class="post-meta">
@@ -219,10 +219,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-04-11 22:48:47 / 修改时间：22:53:59" itemprop="dateCreated datePublished" datetime="2022-04-11T22:48:47+08:00">2022-04-11</time>
+              <time title="创建时间：2022-04-11 22:48:47" itemprop="dateCreated datePublished" datetime="2022-04-11T22:48:47+08:00">2022-04-11</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-04-14 11:36:33" itemprop="dateModified" datetime="2022-04-14T11:36:33+08:00">2022-04-14</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -519,7 +525,7 @@ private E removeAt(int i) &#123;
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="http://www.superzzguo.com/2022/04/11/Collections-PriorityQueue/" title="集合框架之LinkedList源码阅读">http://www.superzzguo.com/2022/04/11/Collections-PriorityQueue/</a>
+    <a href="http://www.superzzguo.com/2022/04/11/Collections-PriorityQueue/" title="集合框架之LinkedList阅读">http://www.superzzguo.com/2022/04/11/Collections-PriorityQueue/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -539,10 +545,13 @@ private E removeAt(int i) &#123;
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2021/12/01/Collections-HashMap/" rel="prev" title="集合框架之HashMap&HashSet源码阅读">
-      <i class="fa fa-chevron-left"></i> 集合框架之HashMap&HashSet源码阅读
+    <a href="/2021/12/01/Collections-HashMap/" rel="prev" title="集合框架之HashMap&HashSet阅读">
+      <i class="fa fa-chevron-left"></i> 集合框架之HashMap&HashSet阅读
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2022/04/14/Collections-LinkedHashMap/" rel="next" title="集合框架之LinkedHashMap阅读">
+      集合框架之LinkedHashMap阅读 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -620,7 +629,7 @@ private E removeAt(int i) &#123;
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-count">20</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

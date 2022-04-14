@@ -1,7 +1,267 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>集合框架之LinkedList源码阅读</title>
+    <title>集合框架之LinkedHashMap阅读</title>
+    <url>/2022/04/14/Collections-LinkedHashMap/</url>
+    <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p><em>LinkedHashMap</em>实现了<em>Map</em>接口，即允许放入<code>key</code>为<code>null</code>的元素，也允许插入<code>value</code>为<code>null</code>的元素。它同时满足<em>HashMap</em>和<em>linked list</em>的某些特性。<strong>可将<em>LinkedHashMap</em>看作采用<em>LinkedList</em>增强的<em>HashMap</em>。</strong></p>
+<span id="more"></span>
+
+<h1 id="LinkedHashMap"><a href="#LinkedHashMap" class="headerlink" title="LinkedHashMap"></a>LinkedHashMap</h1><blockquote>
+<p>做过一道LRU缓存的力扣算法题，本质就是自己实现一个LinkedHashMap，来实现FIFO的替换策略缓存：</p>
+<h4 id="146-LRU-缓存机制"><a href="#146-LRU-缓存机制" class="headerlink" title="146. LRU 缓存机制"></a><a href="https://leetcode-cn.com/problems/lru-cache/">146. LRU 缓存机制</a></h4></blockquote>
+<h2 id="开头"><a href="#开头" class="headerlink" title="开头"></a>开头</h2><p><em>LinkedHashMap</em>实现了<em>Map</em>接口，即允许放入<code>key</code>为<code>null</code>的元素，也允许插入<code>value</code>为<code>null</code>的元素。它同时满足<em>HashMap</em>和<em>linked list</em>的某些特性。<strong>可将<em>LinkedHashMap</em>看作采用<em>LinkedList</em>增强的<em>HashMap</em>。</strong></p>
+<h2 id="LinkedHashMap的实现"><a href="#LinkedHashMap的实现" class="headerlink" title="LinkedHashMap的实现"></a>LinkedHashMap的实现</h2><pre><code class="java">static class Entry&lt;K,V&gt; extends HashMap.Node&lt;K,V&gt; &#123;
+        Entry&lt;K,V&gt; before, after;
+        Entry(int hash, K key, V value, Node&lt;K,V&gt; next) &#123;
+            super(hash, key, value, next);
+        &#125;
+    &#125;
+</code></pre>
+<blockquote>
+<p>这里，可以看到LinkedHashMap的Entry多了 before，after</p>
+<p>其中before、after用来维护Entry<strong>插入的先后顺序</strong>(下图中的<strong>绿、黄</strong>箭头)</p>
+<p>而next是用来维护table上<strong>连接的Entry的顺序</strong>的（下图中的<strong>黑</strong>箭头）</p>
+</blockquote>
+<h3 id="ArrayDeque的底层数据结构"><a href="#ArrayDeque的底层数据结构" class="headerlink" title="ArrayDeque的底层数据结构"></a>ArrayDeque的底层数据结构</h3><blockquote>
+<p>该图基于是JDK7，JDK8中已经不采用header，而是采用head、tail来识别队头、队尾</p>
+</blockquote>
+<img src="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-03-15%20%E4%B8%8A%E5%8D%8810.58.44.png" alt="截屏2022-03-15 上午10.58.44" style="zoom:67%;">
+
+
+
+<p><strong>LinkedHashMap</strong>相比于<strong>HashMap</strong>，通过<code>after、before</code>维护了一个<strong>双向链表</strong>将每个Entry连接一起，这样遍历的时候，可以根据Entry的插入顺序进行 <strong>顺序遍历</strong></p>
+<pre><code class="java">    /**
+     * The head (eldest) of the doubly linked list.
+     */
+    transient LinkedHashMap.Entry&lt;K,V&gt; head;
+
+    /**
+     * The tail (youngest) of the doubly linked list.
+     */
+    transient LinkedHashMap.Entry&lt;K,V&gt; tail;
+</code></pre>
+<p>其中，链表的头部<code>head</code>是一个哑元，仅作指示作用</p>
+<blockquote>
+<p>⚠️在之前HashMap的时候已经知道了table默认初始化容量为16，head的哈希值为-1，<strong>不占用</strong>初始化容量大小，仅仅作为记录 第一个插入 OR 最久访问 的Entry的元素是谁</p>
+</blockquote>
+<blockquote>
+<p>⚠️在JDK7中采用的是<strong>header</strong>作为头指针，而在JDK8的源码时已经找不到<code>header</code>了，相反是使用了<code>head</code>和<code>tail</code>两个头尾指针来取代<code>header</code>,在源码中注释也是这么说的</p>
+<p><img src="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-03-15%20%E4%B8%8A%E5%8D%8811.00.05.png" alt="截屏2022-03-15 上午11.00.05"></p>
+</blockquote>
+<p>我们都知道HashMap 某一buckets上的元素到8个的时候，会自动由<strong>链表</strong>转换成<strong>红黑树</strong>，这时候如何维护双向链表呢？这里找来一张图来看一下，关于详细的红黑树方法这里不做介绍</p>
+<img src="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-03-15%20%E4%B8%8A%E5%8D%8810.58.52.png" alt="截屏2022-03-15 上午10.58.52" style="zoom:67%;">
+
+<h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><blockquote>
+<p><code>accessOrder</code> 控制访问的顺序，后面会介绍到</p>
+</blockquote>
+<pre><code class="java">    /**
+     * The iteration ordering method for this linked hash map: &lt;tt&gt;true&lt;/tt&gt;
+     * for access-order
+     * true 表示 最近 最少使用次序(LRU)， false 表示 插入顺序
+     */
+    final boolean accessOrder;
+</code></pre>
+<p>默认构造方法</p>
+<pre><code class="java">public LinkedHashMap() &#123;
+        super();
+        accessOrder = false;
+    &#125;
+</code></pre>
+<p>指定初始容量 <code>initialCapacity</code></p>
+<pre><code class="java">public LinkedHashMap(int initialCapacity) &#123;
+        super(initialCapacity);
+        accessOrder = false;
+    &#125;
+</code></pre>
+<p>指定初始容量<code>initialCapacity</code>   负载因子<code>float loadFactor</code></p>
+<pre><code class="java">public LinkedHashMap(int initialCapacity, float loadFactor) &#123;
+        super(initialCapacity, loadFactor);
+        accessOrder = false;
+    &#125;
+</code></pre>
+<p>指定初始容量<code>initialCapacity</code>   负载因子<code>float loadFactor</code>  访问顺序<code>accessOrder</code></p>
+<pre><code class="java">public LinkedHashMap(int initialCapacity,
+                         float loadFactor,
+                         boolean accessOrder) &#123;
+        super(initialCapacity, loadFactor);
+        this.accessOrder = accessOrder;
+    &#125;
+</code></pre>
+<p>通过传入的<code>map</code>创建一个<strong>LinkedHashMap</strong>，容量为默认容量（16）和<code>(map.zise()/DEFAULT_LOAD_FACTORY)+1</code>的较大者，装载因子为默认值</p>
+<pre><code class="java">public LinkedHashMap(Map&lt;? extends K, ? extends V&gt; m) &#123;
+        super();
+        accessOrder = false;
+        putMapEntries(m, false);
+    &#125;
+</code></pre>
+<blockquote>
+<p>可以看到，LinkedHashsMap的构造方法几乎继承自HashMap</p>
+</blockquote>
+<h2 id="方法实现"><a href="#方法实现" class="headerlink" title="方法实现"></a>方法实现</h2><h3 id="get"><a href="#get" class="headerlink" title="get()"></a>get()</h3><p><strong>LinkeHashMap</strong>继承自父类<strong>HashMap</strong>，故其的<code>get()</code>方法和HashMap几乎一样</p>
+<pre><code class="java">public V get(Object key) &#123;
+        Node&lt;K,V&gt; e;
+        if ((e = getNode(hash(key), key)) == null)
+            return null;
+        if (accessOrder)
+            //关于这个方法会在put()中讲解
+            afterNodeAccess(e);
+        return e.value;
+    &#125;
+</code></pre>
+<blockquote>
+<p>其中，核心的<code>getNode()</code>方法是继承自父类</p>
+</blockquote>
+<h3 id="put"><a href="#put" class="headerlink" title="put()"></a>put()</h3><p>LinkedHashMap的插入操作依然继承自父类HashMap</p>
+<img src="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-03-15%20%E4%B8%8A%E5%8D%8810.58.58.png" alt="截屏2022-03-15 上午10.58.58" style="zoom:67%;">
+
+<p>那么就会有<strong>比较帅</strong>的读者可能会问，那么双向链表的维护呢？</p>
+<img src="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-03-15%20%E4%B8%8A%E5%8D%8810.59.01.png" alt="截屏2022-03-15 上午10.59.01" style="zoom:67%;">
+
+<h4 id="newNode"><a href="#newNode" class="headerlink" title="newNode()"></a>newNode()</h4><p>这里可以看到，LinkedHashMap重写了<code>newNode()</code>和<code>newTreeNode()</code>方法,使其来支持自己的双向链表功能</p>
+<pre><code class="java">Node&lt;K,V&gt; newNode(int hash, K key, V value, Node&lt;K,V&gt; e) &#123;
+        LinkedHashMap.Entry&lt;K,V&gt; p =
+            new LinkedHashMap.Entry&lt;K,V&gt;(hash, key, value, e);
+        //好小子，夹带私货呀！
+        linkNodeLast(p);
+        return p;
+    &#125;
+</code></pre>
+<pre><code class="java">TreeNode&lt;K,V&gt; newTreeNode(int hash, K key, V value, Node&lt;K,V&gt; next) &#123;
+    TreeNode&lt;K,V&gt; p = new TreeNode&lt;K,V&gt;(hash, key, value, next);
+    // 你也是！
+    linkNodeLast(p);
+    return p;
+&#125;
+</code></pre>
+<h4 id="linkNodeLast"><a href="#linkNodeLast" class="headerlink" title="linkNodeLast()"></a>linkNodeLast()</h4><p>这里可以看到，无论是按照 插入顺序 OR 最少使用次序 新节点都是放在末尾</p>
+<pre><code class="java">private void linkNodeLast(LinkedHashMap.Entry&lt;K,V&gt; p) &#123;
+    LinkedHashMap.Entry&lt;K,V&gt; last = tail;
+    tail = p;
+    if (last == null)
+        head = p;
+    else &#123;
+        // 这里可以看到，最后插入节点在tail的前面
+        // 又一次说明了head和tail是用来维护 队头队尾 的
+        // 而不实际占用容量
+        p.before = last;
+        last.after = p;
+    &#125;
+&#125;
+</code></pre>
+<hr>
+<h4 id="afterNodeAccess"><a href="#afterNodeAccess" class="headerlink" title="afterNodeAccess()"></a>afterNodeAccess()</h4><p>还记得开头的<code>accessOrder</code>吗，当它为true的时候(LRU顺序)，将该节点防至双向链表末尾</p>
+<blockquote>
+<p>LRU即是热点缓存的意思，很久未使用（访问）的节点在链表头，最近使用（访问）的节点在链表末尾,</p>
+<p>TIPS：<code>get()</code>操作中也会调用这个方法</p>
+</blockquote>
+<pre><code class="java">void afterNodeAccess(Node&lt;K,V&gt; e) &#123; // move node to last
+        LinkedHashMap.Entry&lt;K,V&gt; last;
+        if (accessOrder &amp;&amp; (last = tail) != e) &#123;
+            LinkedHashMap.Entry&lt;K,V&gt; p =
+                (LinkedHashMap.Entry&lt;K,V&gt;)e, b = p.before, a = p.after;
+            p.after = null;
+            if (b == null)
+                head = a;
+            else
+                b.after = a;
+            if (a != null)
+                a.before = b;
+            else
+                last = b;
+            if (last == null)
+                head = p;
+            else &#123;
+                p.before = last;
+                last.after = p;
+            &#125;
+            tail = p;
+            ++modCount;
+        &#125;
+    &#125;
+</code></pre>
+<hr>
+<h4 id="afterNodeInsertion"><a href="#afterNodeInsertion" class="headerlink" title="afterNodeInsertion()"></a>afterNodeInsertion()</h4><p>还记得HashMap的put()方法里用到的 <code>evict</code> 吗</p>
+<p>当为<code>true</code>的时候，说明是否要进行插入后操作，作用是判断是否要删除head节点。</p>
+<p>这是一个拓展点，你可以重写removeEldestEntry 方法，执行自己的逻辑</p>
+<ul>
+<li>比如数量超过某值后插入新值会删除最久未被操作的值，即头节点。</li>
+</ul>
+<pre><code class="java">void afterNodeInsertion(boolean evict) &#123; // possibly remove eldest
+        LinkedHashMap.Entry&lt;K,V&gt; first;
+        if (evict &amp;&amp; (first = head) != null &amp;&amp; removeEldestEntry(first)) &#123;
+            K key = first.key;
+            removeNode(hash(key), key, null, false, true);
+        &#125;
+    &#125;
+</code></pre>
+<blockquote>
+<p>⚠️ 通过重写这个来实现LRU缓存策略！！！</p>
+</blockquote>
+<pre><code class="java">protected boolean removeEldestEntry(Map.Entry&lt;K,V&gt; eldest) &#123;
+        return false;
+    &#125;
+</code></pre>
+<hr>
+<p>LinkedHashMap的put()方法总结下来就是：</p>
+<ul>
+<li><p>继承HashMap的<code>put()</code></p>
+</li>
+<li><p>重写了<code>put()</code>内调用的<code>newNode()</code>/<code>newTreeNode()</code>,来<strong>支持(维护)双向链表</strong></p>
+</li>
+<li><p>重写了<strong>HashMap</strong>的<code>put()</code>中的<code>afterNodeAccess()(</code>该方法在HashMap中为空)</p>
+</li>
+<li><p>重写了<strong>HashMap</strong>的<code>put()</code>中的<code>afterNodeInsertion()</code>(该方法在HashMap中为空)</p>
+</li>
+</ul>
+<h3 id="Remove"><a href="#Remove" class="headerlink" title="Remove()"></a>Remove()</h3><blockquote>
+<p>写到这里已经很累了，害能不能偷个懒。。。</p>
+</blockquote>
+<img src="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-03-15%20%E4%B8%8A%E5%8D%8811.01.01.png" alt="截屏2022-03-15 上午11.01.01" style="zoom:67%;">
+
+<h4 id="afterNodeRemoval"><a href="#afterNodeRemoval" class="headerlink" title="afterNodeRemoval()"></a>afterNodeRemoval()</h4><p>和<code>put()</code>一样,重写了<strong>HashMap</strong>的<code>Remove()</code>中的<code>afterNodeRemoval()</code>(该方法在HashMap中为空)</p>
+<blockquote>
+<img src="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-03-15%20%E4%B8%8A%E5%8D%8810.59.10.png" alt="截屏2022-03-15 上午10.59.10" style="zoom:67%;">
+
+<p>这种技巧一般称之为🪝钩子函数/模版方法</p>
+</blockquote>
+<p>HashMap删除next间的关系，在LinkedHashMap中还要将双向链表的关系(before、after)删除</p>
+<pre><code class="java">void afterNodeRemoval(Node&lt;K,V&gt; e) &#123; // unlink
+    LinkedHashMap.Entry&lt;K,V&gt; p =
+        (LinkedHashMap.Entry&lt;K,V&gt;)e, b = p.before, a = p.after;
+    p.before = p.after = null;
+    if (b == null)
+        head = a;
+    else
+        b.after = a;
+    if (a == null)
+        tail = b;
+    else
+        a.before = b;
+&#125;
+</code></pre>
+<h2 id="LinkedHashSet"><a href="#LinkedHashSet" class="headerlink" title="LinkedHashSet"></a>LinkedHashSet</h2><blockquote>
+<p>你以为还没结束嘛？不不不，LinkedHashSet是对LinkedHashMap的进一层包装，内部对应的方法都是调用LinkedHashMap的，是不是很懒？</p>
+</blockquote>
+<blockquote>
+<p>那我也懒得贴代码了，自己去看吧👀</p>
+</blockquote>
+<h2 id="关于红黑树"><a href="#关于红黑树" class="headerlink" title="关于红黑树"></a>关于红黑树</h2><p>我们知道HashMap中某一bucket中的元素到达8个的时候，链表会自动转换为红黑树，在LinkedHashMap中也是一样的，那这个时候又如何维护双向链表呢，这里不做深入研究</p>
+<blockquote>
+<p>参考自：</p>
+<p><a href="https://www.cnblogs.com/xiaoxi/p/6170590.html">https://www.cnblogs.com/xiaoxi/p/6170590.html</a></p>
+<p><a href="https://blog.csdn.net/sinat_34976604/article/details/80971616">https://blog.csdn.net/sinat_34976604/article/details/80971616</a></p>
+<p><a href="https://github.com/CarpenterLee/JCFInternals/blob/master/markdown/7-LinkedHashSet%20and%20LinkedHashMap.md">https://github.com/CarpenterLee/JCFInternals/blob/master/markdown/7-LinkedHashSet%20and%20LinkedHashMap.md</a></p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>JavaCollection</category>
+      </categories>
+      <tags>
+        <tag>JavaCollection</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>集合框架之LinkedList阅读</title>
     <url>/2022/04/11/Collections-PriorityQueue/</url>
     <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>今天复习了一下排序算法，在看到<code>堆排序</code>时无意想到还有个<code>PriorityQueue</code>没写🤣</p>
 <span id="more"></span>
@@ -272,7 +532,7 @@ private E removeAt(int i) &#123;
       </tags>
   </entry>
   <entry>
-    <title>集合框架之HashMap&amp;HashSet源码阅读</title>
+    <title>集合框架之HashMap&amp;HashSet阅读</title>
     <url>/2021/12/01/Collections-HashMap/</url>
     <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p><em>HashMap</em>实现了<em>Map</em>接口，即允许放入<code>key</code>为<code>null</code>的元素，也允许插入<code>value</code>为<code>null</code>的元素。</p>
 <span id="more"></span>
@@ -535,7 +795,7 @@ private E removeAt(int i) &#123;
       </tags>
   </entry>
   <entry>
-    <title>集合框架之ArrayDeque源码阅读</title>
+    <title>集合框架之ArrayDeque阅读</title>
     <url>/2021/11/21/Collections-ArrayDeque/</url>
     <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>Java里有一个叫做Stack的类，却没有叫做Queue的类（它是个接口名字）。<br>当需要使用栈时，Java已不推荐使用Stack，而是推荐使用更高效的ArrayDeque；<br>既然Queue只是一个接口，当需要使用队列时也就首选ArrayDeque了（次选是LinkedList）。</p>
 <span id="more"></span>
@@ -767,7 +1027,7 @@ public E peekLast() &#123;
       </tags>
   </entry>
   <entry>
-    <title>集合框架之LinkedList源码阅读</title>
+    <title>集合框架之LinkedList阅读</title>
     <url>/2021/11/20/Collections-LinkedList/</url>
     <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p><em>LinkedList</em>同时实现了<strong><em>List</em>接口</strong>和<strong><em>Deque</em>接口</strong>，也就是说它既可以看作一个顺序容器，又可以看作一个队列(<em>Queue</em>)，同时又可以看作一个栈(<em>Stack</em>)</p>
 <span id="more"></span>
@@ -1023,7 +1283,7 @@ void linkBefore(E e, Node&lt;E&gt; succ) &#123;
       </tags>
   </entry>
   <entry>
-    <title>集合框架之ArrayList源码阅读</title>
+    <title>集合框架之ArrayList阅读</title>
     <url>/2021/11/18/Collections-ArrayList/</url>
     <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>ArrayList实现了List接口，是顺序容器，即元素存放的数据与放进去的顺序相同。</p>
 <span id="more"></span>

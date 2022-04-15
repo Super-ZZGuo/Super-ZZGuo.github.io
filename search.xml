@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title></title>
+    <title>简单谈谈JUC的LockSupport类</title>
     <url>/2022/04/15/JUC-LockSupport/</url>
     <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p><code>LockSupport</code>提供<strong>创建锁</strong>和其他同步类的<strong>基本线程阻塞</strong>功能</p>
 <p><code>LockerSupport</code>的核心函数功能<strong>基于</strong><code>UNSAFE</code>类提供的park()、unpark()函数</p>

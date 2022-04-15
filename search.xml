@@ -1,6 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title></title>
+    <url>/2022/04/15/JUC-LockSupport/</url>
+    <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p><code>LockSupport</code>提供<strong>创建锁</strong>和其他同步类的<strong>基本线程阻塞</strong>功能</p>
+<p><code>LockerSupport</code>的核心函数功能<strong>基于</strong><code>UNSAFE</code>类提供的park()、unpark()函数</p>
+<span id="more"></span>
+
+<h1 id="简单谈谈-JUC的LockSupport类"><a href="#简单谈谈-JUC的LockSupport类" class="headerlink" title="简单谈谈 JUC的LockSupport类"></a>简单谈谈 JUC的LockSupport类</h1><p><code>LockSupport</code>提供<strong>创建锁</strong>和其他同步类的<strong>基本线程阻塞</strong>功能</p>
+<p><code>LockerSupport</code>的核心函数功能<strong>基于</strong><code>UNSAFE</code>类提供的park()、unpark()函数</p>
+<ul>
+<li><code>park()</code>：阻塞线程，发生阻塞后，可以有以下几种情况可以唤醒线程<ul>
+<li>该线程被调用<code>unpark()</code></li>
+<li>该线程被中断，如<code>thread.interrupt()</code></li>
+<li>该线程<code>park()</code>中设置的时间到了</li>
+</ul>
+</li>
+<li><code>unpark()</code>：释放线程</li>
+</ul>
+<h3 id="LockSupport-park"><a href="#LockSupport-park" class="headerlink" title="LockSupport.park()"></a>LockSupport.park()</h3><pre><code class="java">public static void park(Object blocker) &#123;
+              // 获取当前线程
+        Thread t = Thread.currentThread();
+              // 设置Blocker
+        setBlocker(t, blocker);
+              // 调用UNSAFE.park阻塞线程
+              // 设置时间为无限长，直到可以获取许可
+        UNSAFE.park(false, 0L);
+              // 线程释放后，执行此步，设置Blocker为null
+        setBlocker(t, null);
+    &#125;
+</code></pre>
+<h3 id="LockSupport-unpark"><a href="#LockSupport-unpark" class="headerlink" title="LockSupport.unpark()"></a>LockSupport.unpark()</h3><p>直接调用<code>UNSAFE.unpark(thread)</code></p>
+<pre><code class="java">public static void unpark(Thread thread) &#123;
+        if (thread != null)
+            UNSAFE.unpark(thread);
+    &#125;
+</code></pre>
+<h3 id="测试代码"><a href="#测试代码" class="headerlink" title="测试代码"></a>测试代码</h3><pre><code class="java">class MyThread extends Thread &#123;
+    private Object object;
+
+    public MyThread(Object object)&#123;
+        this.object = object;
+    &#125;
+
+    public void run()&#123;
+        System.out.println(&quot;---before unpark ---&quot;);
+
+        try &#123;
+            Thread.sleep(1000);
+        &#125; catch (InterruptedException e) &#123;
+            e.printStackTrace();
+        &#125;
+        // 获取blocker
+        System.out.println(&quot;Blocker info,&quot; + LockSupport.getBlocker((Thread) object));
+        // 释放
+        LockSupport.unpark((Thread) object);
+        try &#123;
+            // 保证执行 park中的serBlocker(t,null)
+            Thread.sleep(1000);
+        &#125; catch (InterruptedException e) &#123;
+            e.printStackTrace();
+        &#125;
+        // 再次获取blocker
+        System.out.println(&quot;Blocker info,&quot; + LockSupport.getBlocker((Thread) object));
+
+        System.out.println(&quot;---after unpark---&quot;);
+    &#125;
+&#125;
+
+public class ParkTest &#123;
+    public static void main(String[] args) &#123;
+        MyThread myThread = new MyThread(Thread.currentThread());
+        myThread.start();
+        System.out.println(&quot;---before park---&quot;);
+        // 获取许可
+        LockSupport.park(&quot;PPPPark&quot;);
+        System.out.println(&quot;---after park---&quot;);
+    &#125;
+&#125;
+</code></pre>
+<p>结果：</p>
+<img src="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-03-08%20%E4%B8%8B%E5%8D%883.36.48.png" alt="截屏2022-03-08 下午3.36.48" style="zoom:50%;">
+
+
+
+<p>可以看到<code>park()</code>前后 <strong>blocker</strong>的值分别为<strong>自己设定的值</strong>、<strong>null</strong>，验证了前面说明的<code>LockSupport.unpark()</code>函数内两次<code>setBlocker(t, null)</code>.</p>
+<h2 id="Others"><a href="#Others" class="headerlink" title="Others"></a>Others</h2><blockquote>
+<p>若提前调用LockSupport.unpark() 然后再调用LockSupport.park()，则等于是该线程提前拿到了“通行证”，不会因为顺序不当引起阻塞，仍能够正确实现同步。</p>
+</blockquote>
+<blockquote>
+<p>相比于wait、notify的方式更加灵活</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>JUC</category>
+      </categories>
+      <tags>
+        <tag>JUC</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>集合框架之LinkedHashMap阅读</title>
     <url>/2022/04/14/Collections-LinkedHashMap/</url>
     <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p><em>LinkedHashMap</em>实现了<em>Map</em>接口，即允许放入<code>key</code>为<code>null</code>的元素，也允许插入<code>value</code>为<code>null</code>的元素。它同时满足<em>HashMap</em>和<em>linked list</em>的某些特性。<strong>可将<em>LinkedHashMap</em>看作采用<em>LinkedList</em>增强的<em>HashMap</em>。</strong></p>

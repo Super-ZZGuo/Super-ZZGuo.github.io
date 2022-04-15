@@ -278,118 +278,38 @@
 <h3 id="简单实现一个Servlet程序"><a href="#简单实现一个Servlet程序" class="headerlink" title="简单实现一个Servlet程序"></a>简单实现一个Servlet程序</h3><p>(实现前需配置好Tomcat，这里不做赘述)</p>
 <p>1、编写一个类去实现<strong>Servlet</strong>接口</p>
 <p>实现<strong>service</strong>方法，处理请求，并响应数据</p>
-<pre><code class="java">public class HelloServlet implements Servlet &#123;
-/**
-* service 方法是专门用来处理请求和响应的
-* @param servletRequest
-* @param servletResponse
-* @throws ServletException
-* @throws IOException
-  */
-  @Override
-  public void service(ServletRequest servletRequest, ServletResponse servletResponse) 
-          throws ServletException, IOException &#123; 
-      System.out.println(&quot;Hello Servlet 被访问了&quot;);
-  &#125;
-&#125;
-</code></pre>
-<p>2、到web.xml中去配置servlet程序的访问地址</p>
-<pre><code class="xml">
-&lt;!-- servlet 标签给Tomcat 配置Servlet 程序--&gt;
-&lt;servlet&gt;
-    &lt;!--servlet-name 标签Servlet 程序起一个别名（一般是类名） --&gt;
-    &lt;servlet-name&gt;HelloServlet&lt;/servlet-name&gt;
-    &lt;!--servlet-class 是Servlet 程序的全类名--&gt;
-    &lt;servlet-class&gt;com.zhiguo.servlet.HelloServlet&lt;/servlet-class&gt;
-&lt;/servlet&gt;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloServlet</span> <span class="keyword">implements</span> <span class="title">Servlet</span> </span>&#123;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* service 方法是专门用来处理请求和响应的</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> servletRequest</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> servletResponse</span></span><br><span class="line"><span class="comment">* <span class="doctag">@throws</span> ServletException</span></span><br><span class="line"><span class="comment">* <span class="doctag">@throws</span> IOException</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">service</span><span class="params">(ServletRequest servletRequest, ServletResponse servletResponse)</span> </span></span><br><span class="line"><span class="function">          <span class="keyword">throws</span> ServletException, IOException </span>&#123; </span><br><span class="line">      System.out.println(<span class="string">&quot;Hello Servlet 被访问了&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-&lt;!--servlet-mapping 标签给servlet 程序配置访问地址--&gt;
-&lt;servlet-mapping&gt;
-    &lt;!--servlet-name 标签的作用是告诉服务器，我当前配置的地址给哪个Servlet 程序使用--&gt;
-    &lt;servlet-name&gt;HelloServlet&lt;/servlet-name&gt;
-    &lt;!--url-pattern 标签配置访问地址&lt;br/&gt;
-        / 斜杠在服务器解析的时候，表示地址为：http://ip:port/工程路径&lt;br/&gt;
-        /hello 表示地址为：http://ip:port/工程路径/hello &lt;br/&gt;
-        --&gt;
-    &lt;url-pattern&gt;/hello&lt;/url-pattern&gt;
-&lt;/servlet-mapping&gt;
-</code></pre>
+
+
+<p>2、到web.xml中去配置servlet程序的访问地址</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- servlet 标签给Tomcat 配置Servlet 程序--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">servlet</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--servlet-name 标签Servlet 程序起一个别名（一般是类名） --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>HelloServlet<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--servlet-class 是Servlet 程序的全类名--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>com.zhiguo.servlet.HelloServlet<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!--servlet-mapping 标签给servlet 程序配置访问地址--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--servlet-name 标签的作用是告诉服务器，我当前配置的地址给哪个Servlet 程序使用--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>HelloServlet<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--url-pattern 标签配置访问地址&lt;br/&gt;</span></span><br><span class="line"><span class="comment">        / 斜杠在服务器解析的时候，表示地址为：http://ip:port/工程路径&lt;br/&gt;</span></span><br><span class="line"><span class="comment">        /hello 表示地址为：http://ip:port/工程路径/hello &lt;br/&gt;</span></span><br><span class="line"><span class="comment">        --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/hello<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
 <hr>
 <h3 id="url-地址到-Servlet-程序的访问"><a href="#url-地址到-Servlet-程序的访问" class="headerlink" title="url 地址到 Servlet 程序的访问"></a>url 地址到 Servlet 程序的访问</h3><p><img src="/2021/08/30/Web_servlet/2.jpg"></p>
 <hr>
 <h3 id="Servlet-的生命周期"><a href="#Servlet-的生命周期" class="headerlink" title="Servlet 的生命周期"></a>Servlet 的生命周期</h3><ul>
-<li>执行<strong>Servlet构造器方法</strong><pre><code class="java">public HellowServlet() &#123;
-
-&#125;
-</code></pre>
+<li>执行<strong>Servlet构造器方法</strong><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">HellowServlet</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 其中<code>HellowServlet</code>为类名</li>
 </ul>
 <ul>
-<li><p>执行<strong>init初始化方法</strong><br>(执行构造器和初始化方法是在第一次访问的时候创建 Servlet 程序会调用。)</p>
-<pre><code class="java">  public void init(ServletConfig servletConfig) throws ServletException &#123;
-
-  &#125;
-</code></pre>
-</li>
+<li>执行<strong>init初始化方法</strong><br>(执行构造器和初始化方法是在第一次访问的时候创建 Servlet 程序会调用。)<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ServletConfig servletConfig)</span> <span class="keyword">throws</span> ServletException </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ul>
 <ul>
-<li><p>执行<strong>Service方法</strong><br>(执行Servlet方法每次访问都会调用。)</p>
-<pre><code class="java">public void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException &#123;
-
-      &#125;
-</code></pre>
-</li>
+<li>执行<strong>Service方法</strong><br>(执行Servlet方法每次访问都会调用。)<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">service</span><span class="params">(ServletRequest servletRequest, ServletResponse servletResponse)</span> <span class="keyword">throws</span> ServletException, IOException </span>&#123;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure></li>
 </ul>
 <ul>
-<li><p>执行<strong>destroy销毁方法</strong><br>(销毁方法，在web工程停止的时候调用。)</p>
-<pre><code class="java">public void destroy() &#123;
-
-      &#125;
-</code></pre>
-</li>
+<li>执行<strong>destroy销毁方法</strong><br>(销毁方法，在web工程停止的时候调用。)<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure></li>
 </ul>
 <hr>
 <h3 id="通过继承-HttpServlet-实现Servlet-程序"><a href="#通过继承-HttpServlet-实现Servlet-程序" class="headerlink" title="通过继承 HttpServlet 实现Servlet 程序"></a>通过继承 HttpServlet 实现Servlet 程序</h3><p>一般在实际项目开发中，都是使用继承<strong>HttpServlet</strong>类的方式去实现<strong>Servlet</strong>程序。</p>
 <p>1、编写一个类去继承<strong>HttpServlet</strong>类</p>
 <p>2、根据业务需要重写<code>doGet</code>或<code>doPost</code>方法</p>
-<pre><code class="java">public class HelloServlet2 extends HttpServlet &#123;
-/**
-* doGet（）在get 请求的时候调用
-* @param req
-* @param resp
-* @throws ServletException
-* @throws IOException
-  */
-  @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
-  IOException &#123; 
-      System.out.println(&quot;HelloServlet2 的doGet 方法&quot;);
-  &#125;
-  /**
-* doPost（）在post 请求的时候调用
-* @param req
-* @param resp
-* @throws ServletException
-* @throws IOException
-  */
-  @Override
-  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
-  IOException &#123; 
-      System.out.println(&quot;HelloServlet2 的doPost 方法&quot;);
-  &#125;
-&#125;
-</code></pre>
-<p>3、到web.xml中配置Servlet程序的访问地址</p>
-<pre><code class="xml">&lt;servlet&gt;
-    &lt;servlet-name&gt;HelloServlet2&lt;/servlet-name&gt;
-    &lt;servlet-class&gt;com.zhiguo.servlet.HelloServlet2&lt;/servlet-class&gt;
-&lt;/servlet&gt;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloServlet2</span> <span class="keyword">extends</span> <span class="title">HttpServlet</span> </span>&#123;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* doGet（）在get 请求的时候调用</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> req</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> resp</span></span><br><span class="line"><span class="comment">* <span class="doctag">@throws</span> ServletException</span></span><br><span class="line"><span class="comment">* <span class="doctag">@throws</span> IOException</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> ServletException,</span></span><br><span class="line"><span class="function">  IOException </span>&#123; </span><br><span class="line">      System.out.println(<span class="string">&quot;HelloServlet2 的doGet 方法&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">* doPost（）在post 请求的时候调用</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> req</span></span><br><span class="line"><span class="comment">* <span class="doctag">@param</span> resp</span></span><br><span class="line"><span class="comment">* <span class="doctag">@throws</span> ServletException</span></span><br><span class="line"><span class="comment">* <span class="doctag">@throws</span> IOException</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doPost</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> ServletException,</span></span><br><span class="line"><span class="function">  IOException </span>&#123; </span><br><span class="line">      System.out.println(<span class="string">&quot;HelloServlet2 的doPost 方法&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-&lt;servlet-mapping&gt;
-    &lt;servlet-name&gt;HelloServlet2&lt;/servlet-name&gt;
-    &lt;url-pattern&gt;/hello2&lt;/url-pattern&gt;
-&lt;/servlet-mapping&gt;
-</code></pre>
+<p>3、到web.xml中配置Servlet程序的访问地址</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">servlet</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>HelloServlet2<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>com.zhiguo.servlet.HelloServlet2<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>HelloServlet2<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/hello2<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
 <hr>
 <h3 id="Servlet-类的继承体系"><a href="#Servlet-类的继承体系" class="headerlink" title="Servlet 类的继承体系"></a>Servlet 类的继承体系</h3><p><img src="/2021/08/30/Web_servlet/3.jpg"></p>
 <blockquote>
@@ -407,54 +327,10 @@
 </li>
 </ul>
 <p>web.xml 中的配置：</p>
-<pre><code class="xml">&lt;!-- servlet 标签给Tomcat 配置Servlet 程序--&gt;
-&lt;servlet&gt;
-    &lt;!--servlet-name 标签Servlet 程序起一个别名（一般是类名） --&gt;
-    &lt;servlet-name&gt;HelloServlet&lt;/servlet-name&gt;
-    &lt;!--servlet-class 是Servlet 程序的全类名--&gt;
-    &lt;servlet-class&gt;com.zhiguo.servlet.HelloServlet&lt;/servlet-class&gt;
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- servlet 标签给Tomcat 配置Servlet 程序--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">servlet</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--servlet-name 标签Servlet 程序起一个别名（一般是类名） --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>HelloServlet<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!--servlet-class 是Servlet 程序的全类名--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>com.zhiguo.servlet.HelloServlet<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--init-param 是初始化参数--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">init-param</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--是参数名--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param-name</span>&gt;</span>username<span class="tag">&lt;/<span class="name">param-name</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--是参数值--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param-value</span>&gt;</span>root<span class="tag">&lt;/<span class="name">param-value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">init-param</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!--init-param 是初始化参数--&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">init-param</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--是参数名--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param-name</span>&gt;</span>url<span class="tag">&lt;/<span class="name">param-name</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!--是参数值--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param-value</span>&gt;</span>jdbc:mysql://localhost:3306/test<span class="tag">&lt;/<span class="name">param-value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">init-param</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!--servlet-mapping 标签给servlet 程序配置访问地址--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></span><br><span class="line">  <span class="comment">&lt;!--servlet-name 标签的作用是告诉服务器，我当前配置的地址给哪个Servlet 程序使用--&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>HelloServlet<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></span><br><span class="line">  <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">  url-pattern 标签配置访问地址&lt;br/&gt;</span></span><br><span class="line"><span class="comment">  / 斜杠在服务器解析的时候，表示地址为：http://ip:port/工程路径&lt;br/&gt;</span></span><br><span class="line"><span class="comment">  /hello 表示地址为：http://ip:port/工程路径/hello &lt;br/&gt;</span></span><br><span class="line"><span class="comment">  --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/hello<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></span><br></pre></td></tr></table></figure>
 
-    &lt;!--init-param 是初始化参数--&gt;
-    &lt;init-param&gt;
-        &lt;!--是参数名--&gt;
-        &lt;param-name&gt;username&lt;/param-name&gt;
-        &lt;!--是参数值--&gt;
-        &lt;param-value&gt;root&lt;/param-value&gt;
-    &lt;/init-param&gt;
-
-    &lt;!--init-param 是初始化参数--&gt;
-    &lt;init-param&gt;
-        &lt;!--是参数名--&gt;
-        &lt;param-name&gt;url&lt;/param-name&gt;
-        &lt;!--是参数值--&gt;
-        &lt;param-value&gt;jdbc:mysql://localhost:3306/test&lt;/param-value&gt;
-    &lt;/init-param&gt;
-&lt;/servlet&gt;
-
-&lt;!--servlet-mapping 标签给servlet 程序配置访问地址--&gt;
-&lt;servlet-mapping&gt;
-  &lt;!--servlet-name 标签的作用是告诉服务器，我当前配置的地址给哪个Servlet 程序使用--&gt;
-  &lt;servlet-name&gt;HelloServlet&lt;/servlet-name&gt;
-  &lt;!--
-  url-pattern 标签配置访问地址&lt;br/&gt;
-  / 斜杠在服务器解析的时候，表示地址为：http://ip:port/工程路径&lt;br/&gt;
-  /hello 表示地址为：http://ip:port/工程路径/hello &lt;br/&gt;
-  --&gt;
-  &lt;url-pattern&gt;/hello&lt;/url-pattern&gt;
-&lt;/servlet-mapping&gt;
-</code></pre>
 <p><strong>Servlet</strong>程序中的代码</p>
-<pre><code class="java">public void init(ServletConfig servletConfig) throws ServletException &#123;
-    System.out.println(&quot;2 init 初始化方法&quot;);
-// 1、可以获取Servlet 程序的别名servlet-name 的值
-    System.out.println(&quot;HelloServlet 程序的别名是:&quot; + servletConfig.getServletName());
-// 2、获取初始化参数init-param
-    System.out.println(&quot;初始化参数username 的值是;&quot; + servletConfig.getInitParameter(&quot;username&quot;));
-    System.out.println(&quot;初始化参数url 的值是;&quot; + servletConfig.getInitParameter(&quot;url&quot;));
-// 3、获取ServletContext 对象
-    System.out.println(servletConfig.getServletContext());
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ServletConfig servletConfig)</span> <span class="keyword">throws</span> ServletException </span>&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;2 init 初始化方法&quot;</span>);</span><br><span class="line"><span class="comment">// 1、可以获取Servlet 程序的别名servlet-name 的值</span></span><br><span class="line">    System.out.println(<span class="string">&quot;HelloServlet 程序的别名是:&quot;</span> + servletConfig.getServletName());</span><br><span class="line"><span class="comment">// 2、获取初始化参数init-param</span></span><br><span class="line">    System.out.println(<span class="string">&quot;初始化参数username 的值是;&quot;</span> + servletConfig.getInitParameter(<span class="string">&quot;username&quot;</span>));</span><br><span class="line">    System.out.println(<span class="string">&quot;初始化参数url 的值是;&quot;</span> + servletConfig.getInitParameter(<span class="string">&quot;url&quot;</span>));</span><br><span class="line"><span class="comment">// 3、获取ServletContext 对象</span></span><br><span class="line">    System.out.println(servletConfig.getServletContext());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><strong>注意点</strong></p>
 <p><img src="/2021/08/30/Web_servlet/4.jpg"></p>
 <blockquote>
@@ -486,40 +362,11 @@
 </li>
 </ul>
 <p>ServletContext 演示代码</p>
-<pre><code class="java">protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException &#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="keyword">throws</span> ServletException, IOException </span>&#123;</span><br><span class="line"></span><br><span class="line">         <span class="comment">//获取web.xml中配置上下文的参数context——param</span></span><br><span class="line">        ServletContext context = getServletConfig().getServletContext();</span><br><span class="line"></span><br><span class="line">        String username = context.getInitParameter(<span class="string">&quot;username&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;username的名字是：&quot;</span>+username);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取当前工程的路径</span></span><br><span class="line">        System.out.println(<span class="string">&quot;当前工程的路径是&quot;</span>+context.getContextPath());</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取工程部署后在服务器硬盘上的绝对路径</span></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         *  /斜杠被服务器解析地址为 http://ip:port/工程名/  映射到idea上的web目录&lt;/br&gt;</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        System.out.println(<span class="string">&quot;工程部署的绝对路径是&quot;</span>+ context.getRealPath(<span class="string">&quot;/&quot;</span>));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest request, HttpServletResponse response)</span> <span class="keyword">throws</span> ServletException, IOException </span>&#123;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//获取servletcontext对象</span></span><br><span class="line">        ServletContext context = getServletContext();</span><br><span class="line">        context.setAttribute(<span class="string">&quot;key1&quot;</span>,<span class="string">&quot;value&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;context数据域中key1的值是&quot;</span>+context.getAttribute(<span class="string">&quot;key1&quot;</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-         //获取web.xml中配置上下文的参数context——param
-        ServletContext context = getServletConfig().getServletContext();
-
-        String username = context.getInitParameter(&quot;username&quot;);
-        System.out.println(&quot;username的名字是：&quot;+username);
-
-        //获取当前工程的路径
-        System.out.println(&quot;当前工程的路径是&quot;+context.getContextPath());
-
-        //获取工程部署后在服务器硬盘上的绝对路径
-        /**
-         *  /斜杠被服务器解析地址为 http://ip:port/工程名/  映射到idea上的web目录&lt;/br&gt;
-         */
-        System.out.println(&quot;工程部署的绝对路径是&quot;+ context.getRealPath(&quot;/&quot;));
-    &#125;
-</code></pre>
-<pre><code class="java">protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException &#123;
-        
-        //获取servletcontext对象
-        ServletContext context = getServletContext();
-        context.setAttribute(&quot;key1&quot;,&quot;value&quot;);
-        System.out.println(&quot;context数据域中key1的值是&quot;+context.getAttribute(&quot;key1&quot;));
-&#125;
-</code></pre>
 <p>web.xml里的配置</p>
-<pre><code class="xml">&lt;!--context-param 是上下文参数(它属于整个web 工程)--&gt;
-&lt;context-param&gt;
-    &lt;param-name&gt;username&lt;/param-name&gt;
-    &lt;param-value&gt;context&lt;/param-value&gt;
-&lt;/context-param&gt;
-&lt;!--context-param 是上下文参数(它属于整个web 工程)--&gt;
-</code></pre>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--context-param 是上下文参数(它属于整个web 工程)--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">context-param</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">param-name</span>&gt;</span>username<span class="tag">&lt;/<span class="name">param-name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">param-value</span>&gt;</span>context<span class="tag">&lt;/<span class="name">param-value</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">context-param</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!--context-param 是上下文参数(它属于整个web 工程)--&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>后续关于Web.xml的相同、类似的配置不再赘述</p>
 </blockquote>
@@ -572,48 +419,13 @@
 </li>
 </ul>
 <p><strong>两个流同时只能使用一个。</strong></p>
-<h3 id="如何往客户端传送数据"><a href="#如何往客户端传送数据" class="headerlink" title="如何往客户端传送数据"></a>如何往客户端传送数据</h3><pre><code class="java">public class ResponseIOServlet extends HttpServlet &#123;
-
-  @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException &#123;
-      
-    //往客户端回传字符流
-    PrintWriter writer = resp.getWriter();
-    writer.println(&quot;response&#39;s content!&quot;);
-    writer.println(&quot;国哥真的帅呀！&quot;);
-  &#125;
-&#125;
-</code></pre>
+<h3 id="如何往客户端传送数据"><a href="#如何往客户端传送数据" class="headerlink" title="如何往客户端传送数据"></a>如何往客户端传送数据</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ResponseIOServlet</span> <span class="keyword">extends</span> <span class="title">HttpServlet</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span></span><br><span class="line">  <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> ServletException, IOException </span>&#123;</span><br><span class="line">      </span><br><span class="line">    <span class="comment">//往客户端回传字符流</span></span><br><span class="line">    PrintWriter writer = resp.getWriter();</span><br><span class="line">    writer.println(<span class="string">&quot;response&#x27;s content!&quot;</span>);</span><br><span class="line">    writer.println(<span class="string">&quot;国哥真的帅呀！&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><img src="/2021/08/30/Web_servlet/11.png"></p>
 <h3 id="响应的乱码解决"><a href="#响应的乱码解决" class="headerlink" title="响应的乱码解决"></a>响应的乱码解决</h3><p>我们在上面往客户端传送数据时会发现中文编码格式会存在问题</p>
 <p>“<strong>国哥真的帅呀！</strong>“显示成了”<strong>？？？？？？</strong>“</p>
 <p>这是因为服务器默认的编码格式为<strong>ISO-8859-1</strong></p>
 <p>我们可以分别通过<code>setCharacterEncoding()</code>、<code>setHeader()</code>和<code>setContentType()</code>两种方法来设置服务器和浏览器的编码格式</p>
-<pre><code class="java">public class ResponseIOServlet extends HttpServlet &#123;
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException &#123;
-
-        //System.out.println(resp.getCharacterEncoding()); //默认ISO-8859-1
-
-        //设置服务器字符集为UTF-8
-        // resp.setCharacterEncoding(&quot;UTF-8&quot;);
-
-        //通过响应头，设置浏览器也使用UTF-8字符集
-        // resp.setHeader(&quot;Content-Type&quot;,&quot;text/html;charset=UTF-8&quot;);
-
-        //同时设置服务器和客户端为UTF-8字符集，还设置了响应头
-        //在获取流对象前调用才有效
-        resp.setContentType(&quot;text/html;charset=UTF-8&quot;);
-
-
-        //往客户端回传字符流
-        PrintWriter writer = resp.getWriter();
-        writer.println(&quot;response&#39;s content!&quot;);
-        writer.println(&quot;国哥真的帅呀！&quot;);
-    &#125;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ResponseIOServlet</span> <span class="keyword">extends</span> <span class="title">HttpServlet</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">doGet</span><span class="params">(HttpServletRequest req, HttpServletResponse resp)</span> <span class="keyword">throws</span> ServletException, IOException </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//System.out.println(resp.getCharacterEncoding()); //默认ISO-8859-1</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">//设置服务器字符集为UTF-8</span></span><br><span class="line">        <span class="comment">// resp.setCharacterEncoding(&quot;UTF-8&quot;);</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">//通过响应头，设置浏览器也使用UTF-8字符集</span></span><br><span class="line">        <span class="comment">// resp.setHeader(&quot;Content-Type&quot;,&quot;text/html;charset=UTF-8&quot;);</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">//同时设置服务器和客户端为UTF-8字符集，还设置了响应头</span></span><br><span class="line">        <span class="comment">//在获取流对象前调用才有效</span></span><br><span class="line">        resp.setContentType(<span class="string">&quot;text/html;charset=UTF-8&quot;</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment">//往客户端回传字符流</span></span><br><span class="line">        PrintWriter writer = resp.getWriter();</span><br><span class="line">        writer.println(<span class="string">&quot;response&#x27;s content!&quot;</span>);</span><br><span class="line">        writer.println(<span class="string">&quot;国哥真的帅呀！&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>推荐使用<code>setContentType()</code>一步到位</p>
 </blockquote>

@@ -308,9 +308,8 @@
 <li><p>bulk批量API</p>
 <ul>
 <li><p>格式：</p>
-<pre><code class="json">&#123;action:&#123;metadata&#125;&#125;
-&#123;requstbody&#125;
-</code></pre>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;action:&#123;metadata&#125;&#125;</span><br><span class="line">&#123;requstbody&#125;</span><br></pre></td></tr></table></figure>
+
 <ul>
 <li><code>action</code>指行为：包含create、update、index、delete<ul>
 <li>如果数据存在(相同)，create会执行失败，index可以成功执行</li>

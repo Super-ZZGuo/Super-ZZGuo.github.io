@@ -299,22 +299,8 @@
 <h3 id="ARG-构建参数"><a href="#ARG-构建参数" class="headerlink" title="ARG 构建参数"></a><code>ARG</code> 构建参数</h3><p><code>ARG</code>用来构建参数名称和定义默认值，其和<code>ENV</code>环境变量不同的是在容器运行时，是不存在这些<code>ARG</code>构建的参数的，但可以在<code>Dockerhistory</code>中查看</p>
 <p>格式：<br><code>ARG &lt;参数名&gt;[=&lt;默认值&gt;]</code></p>
 <p>关于<code>ARG</code>的使用细节，可以参考如下：</p>
-<pre><code>ARG DOCKER_USERNAME=library
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">ARG DOCKER_USERNAME=library</span><br><span class="line"></span><br><span class="line">FROM $&#123;DOCKER_USERNAME&#125;/alpine</span><br><span class="line"></span><br><span class="line"># 在FROM 之后使用变量，必须在每个阶段分别指定</span><br><span class="line">ARG DOCKER_USERNAME=library</span><br><span class="line"></span><br><span class="line">RUN set -x ; echo $&#123;DOCKER_USERNAME&#125;</span><br><span class="line"></span><br><span class="line">FROM $&#123;DOCKER_USERNAME&#125;/alpine</span><br><span class="line"></span><br><span class="line"># 在FROM 之后使用变量，必须在每个阶段分别指定</span><br><span class="line">ARG DOCKER_USERNAME=library</span><br><span class="line"></span><br><span class="line">RUN set -x ; echo $&#123;DOCKER_USERNAME&#125;</span><br></pre></td></tr></table></figure>
 
-FROM $&#123;DOCKER_USERNAME&#125;/alpine
-
-# 在FROM 之后使用变量，必须在每个阶段分别指定
-ARG DOCKER_USERNAME=library
-
-RUN set -x ; echo $&#123;DOCKER_USERNAME&#125;
-
-FROM $&#123;DOCKER_USERNAME&#125;/alpine
-
-# 在FROM 之后使用变量，必须在每个阶段分别指定
-ARG DOCKER_USERNAME=library
-
-RUN set -x ; echo $&#123;DOCKER_USERNAME&#125;
-</code></pre>
 <h3 id="VOLUME-构建匿名挂载卷"><a href="#VOLUME-构建匿名挂载卷" class="headerlink" title="VOLUME 构建匿名挂载卷"></a><code>VOLUME</code> 构建匿名挂载卷</h3><p>适用场景，在例如数据库等动态数据读写较多和需要保存的情况下，应该将数据保存在容器的外部</p>
 <p>在Docker File中添加VOLUME是以防用户在<code>Docker run</code>中不指定挂载，应用正常运行的时候不会在容器中写入大量的数据</p>
 <p>Docker挂载卷默认保存地址是在 <code>var/lib/docker/volumes</code> 下</p>

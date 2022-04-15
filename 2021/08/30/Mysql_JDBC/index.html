@@ -371,33 +371,11 @@
 <blockquote>
 <p>一个简单的连接实例:</p>
 </blockquote>
-<pre><code class="java">public class DruidTest &#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DruidTest</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getConnection</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line"></span><br><span class="line">        Properties pros = <span class="keyword">new</span> Properties();</span><br><span class="line"></span><br><span class="line">        InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream(<span class="string">&quot;druid.properties&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//装载配置文件数据</span></span><br><span class="line">        pros.load(is);</span><br><span class="line">        </span><br><span class="line">        DataSource source = DruidDataSourceFactory.createDataSource(pros);</span><br><span class="line"></span><br><span class="line">        Connection conn = source.getConnection();</span><br><span class="line"></span><br><span class="line">        System.out.println(conn);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-    @Test
-    public void getConnection() throws Exception&#123;
-
-        Properties pros = new Properties();
-
-        InputStream is = ClassLoader.getSystemClassLoader().getResourceAsStream(&quot;druid.properties&quot;);
-
-        //装载配置文件数据
-        pros.load(is);
-        
-        DataSource source = DruidDataSourceFactory.createDataSource(pros);
-
-        Connection conn = source.getConnection();
-
-        System.out.println(conn);
-    &#125;
-&#125;
-</code></pre>
 <p>其中，src下的配置文件为：【druid.properties】</p>
-<pre><code class="java">url=jdbc:mysql://localhost:3306/test?rewriteBatchedStatements=true
-username=root
-password=123456
-driverClassName=com.mysql.jdbc.Driver
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">url=jdbc:mysql:<span class="comment">//localhost:3306/test?rewriteBatchedStatements=true</span></span><br><span class="line">username=root</span><br><span class="line">password=<span class="number">123456</span></span><br><span class="line">driverClassName=com.mysql.jdbc.Driver</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-</code></pre>
 <ul>
 <li>详细配置参数(在配置文件内添加)：</li>
 </ul>
@@ -612,26 +590,7 @@ driverClassName=com.mysql.jdbc.Driver
 </ul>
 </li>
 <li><p>一些简单的测试</p>
-<pre><code class="java">//测试插入
-@Test
-public void testInsert() throws SQLException&#123;
-Connection conn = null;
-
-      try &#123;
-          QueryRunner Runner = new QueryRunner();
-
-          conn = JDBCutils.getConnection();
-
-          String sql = &quot;insert into customers(name,email,birth)value(?,?,?)&quot;;
-
-          Runner.update(conn,sql,&quot;杰哥&quot;,&quot;jiege@qq.com&quot;,&quot;2000-11-11&quot;);
-
-      &#125; catch (Exception e) &#123;
-          e.printStackTrace();
-      &#125;
-  &#125;
-</code></pre>
-</li>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//测试插入</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testInsert</span><span class="params">()</span> <span class="keyword">throws</span> SQLException</span>&#123;</span><br><span class="line">Connection conn = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            QueryRunner Runner = <span class="keyword">new</span> QueryRunner();</span><br><span class="line"></span><br><span class="line">            conn = JDBCutils.getConnection();</span><br><span class="line"></span><br><span class="line">            String sql = <span class="string">&quot;insert into customers(name,email,birth)value(?,?,?)&quot;</span>;</span><br><span class="line"></span><br><span class="line">            Runner.update(conn,sql,<span class="string">&quot;杰哥&quot;</span>,<span class="string">&quot;jiege@qq.com&quot;</span>,<span class="string">&quot;2000-11-11&quot;</span>);</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></li>
 </ul>
 <h3 id="ResultSetHandler接口及实现类"><a href="#ResultSetHandler接口及实现类" class="headerlink" title="ResultSetHandler接口及实现类"></a>ResultSetHandler接口及实现类</h3><ul>
 <li><p>该接口用于处理 java.sql.ResultSet，将数据按要求转换为另一种形式。</p>
@@ -661,29 +620,7 @@ Connection conn = null;
 </ul>
 </li>
 <li><p>一些简单的测试</p>
-<pre><code class="java">//测试查询多条记录
-@Test
-public void testQueryList() throws SQLException &#123;
-Connection conn = null;
-try &#123;
-QueryRunner Runner = new QueryRunner();
-
-          conn = JDBCutils.getConnection();
-
-          String sql = &quot;select id ,name,email,birth from Customers where id &lt; ?&quot;;
-
-          BeanListHandler&lt;Customer&gt; handler = new BeanListHandler&lt;Customer&gt;(Customer.class);
-
-          List&lt;Customer&gt; list = Runner.query(conn, sql, handler, 23);
-
-          list.forEach(System.out::println);
-
-      &#125; catch (Exception e) &#123;
-          e.printStackTrace();
-      &#125;
-  &#125;
-</code></pre>
-</li>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//测试查询多条记录</span></span><br><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testQueryList</span><span class="params">()</span> <span class="keyword">throws</span> SQLException </span>&#123;</span><br><span class="line">Connection conn = <span class="keyword">null</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">QueryRunner Runner = <span class="keyword">new</span> QueryRunner();</span><br><span class="line"></span><br><span class="line">            conn = JDBCutils.getConnection();</span><br><span class="line"></span><br><span class="line">            String sql = <span class="string">&quot;select id ,name,email,birth from Customers where id &lt; ?&quot;</span>;</span><br><span class="line"></span><br><span class="line">            BeanListHandler&lt;Customer&gt; handler = <span class="keyword">new</span> BeanListHandler&lt;Customer&gt;(Customer.class);</span><br><span class="line"></span><br><span class="line">            List&lt;Customer&gt; list = Runner.query(conn, sql, handler, <span class="number">23</span>);</span><br><span class="line"></span><br><span class="line">            list.forEach(System.out::println);</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></li>
 </ul>
 
     </div>

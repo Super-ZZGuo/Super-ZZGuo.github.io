@@ -277,33 +277,25 @@
 <ul>
 <li><strong>构造器方法</strong></li>
 </ul>
-<pre><code class="java">  public Filter() &#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">Filter</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-  &#125;
-</code></pre>
 <ul>
 <li><strong>init初始化方法</strong></li>
 </ul>
-<pre><code class="java">public void init(FilterConfig filterConfig) throws ServletException &#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(FilterConfig filterConfig)</span> <span class="keyword">throws</span> ServletException </span>&#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
-    &#125;
-</code></pre>
 <p>第1，2步，在web 工程启动的时候执行（Filter 已经创建）</p>
 <ul>
 <li><strong>doFilter过滤方法</strong></li>
 </ul>
-<pre><code class="java">public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException &#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doFilter</span><span class="params">(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)</span> <span class="keyword">throws</span> IOException, ServletException </span>&#123;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
 
-        &#125;
-</code></pre>
 <p>第3步，每次拦截到请求，就会执行</p>
 <ul>
 <li><strong>destroy销毁</strong></li>
 </ul>
-<pre><code class="java">  public void destroy() &#123;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-  &#125;
-</code></pre>
 <p>第4步，停止web工程的时候，就会执行（停止web 工程，也会销毁Filter 过滤器）</p>
 <h2 id="FilterConfig-类"><a href="#FilterConfig-类" class="headerlink" title="FilterConfig 类"></a>FilterConfig 类</h2><p><strong>FilterConfig</strong>类见名知义，它是Filter过滤器的<strong>配置文件类</strong>。</p>
 <p>Tomcat每次创建Filter的时候，也会同时创建一个<strong>FilterConfig</strong>类，这里包含了Filter配置文件的配置信息。</p>

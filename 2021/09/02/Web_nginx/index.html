@@ -272,79 +272,20 @@
 </ul>
 </li>
 </ul>
-<pre><code>worker_processes 4;  
-... #全局块
-events  #events块
-&#123;
-   ...
-&#125;
-http  #http块
-&#123; 
-   ...   #http全局块
-   server  #server块 相当于一个虚拟机
-   &#123;
-      ... #server全局块
-      location [Pattern]
-      &#123;
-         ...
-      &#125;
-   &#125;
-   server
-   &#123;
-      ...
-   &#125;
-   ...
-&#125;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">worker_processes 4;  </span><br><span class="line">... #全局块</span><br><span class="line">events  #events块</span><br><span class="line">&#123;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br><span class="line">http  #http块</span><br><span class="line">&#123; </span><br><span class="line">   ...   #http全局块</span><br><span class="line">   server  #server块 相当于一个虚拟机</span><br><span class="line">   &#123;</span><br><span class="line">      ... #server全局块</span><br><span class="line">      location [Pattern]</span><br><span class="line">      &#123;</span><br><span class="line">         ...</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   server</span><br><span class="line">   &#123;</span><br><span class="line">      ...</span><br><span class="line">   &#125;</span><br><span class="line">   ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="Nginx配置负载均衡"><a href="#Nginx配置负载均衡" class="headerlink" title="Nginx配置负载均衡"></a>Nginx配置负载均衡</h3><p><strong>负载均衡</strong>通过配置文件中的<code>upstream模块</code>来实现对请求的分发<br>其中，负载均衡有几种分发策略:</p>
 <ul>
 <li><p>轮询</p>
-<pre><code>upstream lunxun &#123;
-      server xx.xxx.x.xxx:8080;
-      server xx.xxx.x.xxx:8081;
-  &#125;
-
-  server &#123;
-      listen 80;
-
-      location / &#123;
-          proxy_pass http://lunxun;
-      &#125;
-  &#125;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">upstream lunxun &#123;</span><br><span class="line">       server xx.xxx.x.xxx:8080;</span><br><span class="line">       server xx.xxx.x.xxx:8081;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   server &#123;</span><br><span class="line">       listen 80;</span><br><span class="line"></span><br><span class="line">       location / &#123;</span><br><span class="line">           proxy_pass http://lunxun;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
 <p>所有请求轮流发送至两台服务器对应的端口中</p>
 </li>
 <li><p>加权轮询</p>
-<pre><code>upstream quanzhong &#123;
-      server xx.xxx.x.xxx:8080 weight=1; 
-      server xx.xxx.x.xxx:8081 weight=2;
-  &#125;
-
-  server &#123;
-      listen 80;
-
-      location / &#123;
-          proxy_pass http://quanzhong;
-      &#125;
-  &#125;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">upstream quanzhong &#123;</span><br><span class="line">       server xx.xxx.x.xxx:8080 weight=1; </span><br><span class="line">       server xx.xxx.x.xxx:8081 weight=2;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   server &#123;</span><br><span class="line">       listen 80;</span><br><span class="line"></span><br><span class="line">       location / &#123;</span><br><span class="line">           proxy_pass http://quanzhong;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
 <p>请求根据权重分发给不同服务器，举例:六个请求分发4个给weight=2的服务器,分发2个给weight=1的服务器</p>
 </li>
 <li><p>源地址哈希(新版本的Nginx中已经集成)</p>
-<pre><code>upstream url_hash &#123;
-      ip_hash;
-      server xx.xxx.x.xxx:8080; 
-      server xx.xxx.x.xxx:8081;
-  &#125;
-
-  server &#123;
-      listen 80;
-
-      location / &#123;
-          proxy_pass http://url_hash;
-      &#125;
-  &#125;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">upstream url_hash &#123;</span><br><span class="line">       ip_hash;</span><br><span class="line">       server xx.xxx.x.xxx:8080; </span><br><span class="line">       server xx.xxx.x.xxx:8081;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   server &#123;</span><br><span class="line">       listen 80;</span><br><span class="line"></span><br><span class="line">       location / &#123;</span><br><span class="line">           proxy_pass http://url_hash;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
 <p>将访问用户的ip进行哈希后的结果进行分配，每个用户定向访问到一个服务器中</p>
 <blockquote>
 <p>注意</p>
@@ -360,20 +301,7 @@ http  #http块
 </blockquote>
 </li>
 <li><p>第三方调度算法(举例)</p>
-<pre><code>upstream fair &#123;
-      fair;
-      server xx.xxx.x.xxx:8080; 
-      server xx.xxx.x.xxx:8081;
-  &#125;
-
-  server &#123;
-      listen 80;
-
-      location / &#123;
-          proxy_pass http://url_hash;
-      &#125;
-  &#125;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">upstream fair &#123;</span><br><span class="line">        fair;</span><br><span class="line">        server xx.xxx.x.xxx:8080; </span><br><span class="line">        server xx.xxx.x.xxx:8081;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">            proxy_pass http://url_hash;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 <p>fair：用于为响应时间分配服务器组内的服务器，他是按后端服务器的响应时间来分配请求，响应时间越短的越优先分配，需要第三方模块的支持<code>nginx-upstream-fair-master</code></p>
 </li>
 </ul>

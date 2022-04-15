@@ -275,52 +275,21 @@
 </blockquote>
 <h1 id="ArrayDeque的实现"><a href="#ArrayDeque的实现" class="headerlink" title="ArrayDeque的实现"></a>ArrayDeque的实现</h1><p><em>ArrayDeque</em>和<em>LinkedList</em>是<em>Deque</em>的两个通用实现,但官方更推荐使用ArrayDeque来实现栈和队列的功能</p>
 <h2 id="ArrayDeque的底层数据结构"><a href="#ArrayDeque的底层数据结构" class="headerlink" title="ArrayDeque的底层数据结构"></a>ArrayDeque的底层数据结构</h2><p>ArrayDeque一看名字就知道是使用数组来实现队列操作，故而该数组必须是循环的，且ArrayDeque是非线程安全的</p>
-<h2 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h2><pre><code class="java">// 数组本体
-transient Object[] elements; 
-// 指向队列首端第一个元素
-transient int head;
-// 指向队列尾端最后一个元素的下一个可插入空位
-// 而不是指向队尾元素
-transient int tail;
+<h2 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 数组本体</span></span><br><span class="line"><span class="keyword">transient</span> Object[] elements; </span><br><span class="line"><span class="comment">// 指向队列首端第一个元素</span></span><br><span class="line"><span class="keyword">transient</span> <span class="keyword">int</span> head;</span><br><span class="line"><span class="comment">// 指向队列尾端最后一个元素的下一个可插入空位</span></span><br><span class="line"><span class="comment">// 而不是指向队尾元素</span></span><br><span class="line"><span class="keyword">transient</span> <span class="keyword">int</span> tail;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> MIN_INITIAL_CAPACITY = <span class="number">8</span>;</span><br></pre></td></tr></table></figure>
 
-private static final int MIN_INITIAL_CAPACITY = 8;
-</code></pre>
+
+
 <p>这三个方法为ArrayDeque的构造方法</p>
-<pre><code class="java">// 构造一个空数组deque，初始容量足以容纳16个元素。
-public ArrayDeque() &#123;
-    elements = new Object[16];
-&#125;
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 构造一个空数组deque，初始容量足以容纳16个元素。</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayDeque</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    elements = <span class="keyword">new</span> Object[<span class="number">16</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 构造一个空数组deque，初始容量足以容纳指定数量的元素。</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayDeque</span><span class="params">(<span class="keyword">int</span> numElements)</span> </span>&#123;</span><br><span class="line">    allocateElements(numElements);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 构造一个包含指定集合元素的deque，按照它们由集合的迭代器返回的顺序。</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ArrayDeque</span><span class="params">(Collection&lt;? extends E&gt; c)</span> </span>&#123;</span><br><span class="line">    allocateElements(c.size());</span><br><span class="line">    addAll(c);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-// 构造一个空数组deque，初始容量足以容纳指定数量的元素。
-public ArrayDeque(int numElements) &#123;
-    allocateElements(numElements);
-&#125;
-// 构造一个包含指定集合元素的deque，按照它们由集合的迭代器返回的顺序。
-public ArrayDeque(Collection&lt;? extends E&gt; c) &#123;
-    allocateElements(c.size());
-    addAll(c);
-&#125;
-</code></pre>
+
+
 <h2 id="扩容"><a href="#扩容" class="headerlink" title="扩容"></a>扩容</h2><p>再将方法解析之前，先讲讲扩容</p>
 <p>在<strong>构造函数需要构造指定大小的数组</strong>OR上述提到<strong>有关添加的操作</strong>都会涉及到数组的扩容</p>
 <p>ArrayDeque的扩容是新直接申请<strong>两倍</strong>(左移一位)的数组空间，然后将原来的数组使用复制<code>System.arraycopy</code>过去</p>
 <p><img src="/2021/11/21/Collections-ArrayDeque/ArrayDeque_5.png"></p>
-<pre><code class="java">private void doubleCapacity() &#123;
-    assert head == tail;
-    int p = head;
-    int n = elements.length; //旧数组的大小
-    int r = n - p; // head右边的元素个数
-    int newCapacity = n &lt;&lt; 1; // 新申请数组的大小
-    if (newCapacity &lt; 0)
-        throw new IllegalStateException(&quot;Sorry, deque too big&quot;);
-    Object[] a = new Object[newCapacity];
-    System.arraycopy(elements, p, a, 0, r);//复制右半部分，对应上图中绿色部分
-    System.arraycopy(elements, 0, a, r, p);//复制左半部分，对应上图中灰色部分
-    elements = a;
-    head = 0;
-    tail = n;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doubleCapacity</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">assert</span> head == tail;</span><br><span class="line">    <span class="keyword">int</span> p = head;</span><br><span class="line">    <span class="keyword">int</span> n = elements.length; <span class="comment">//旧数组的大小</span></span><br><span class="line">    <span class="keyword">int</span> r = n - p; <span class="comment">// head右边的元素个数</span></span><br><span class="line">    <span class="keyword">int</span> newCapacity = n &lt;&lt; <span class="number">1</span>; <span class="comment">// 新申请数组的大小</span></span><br><span class="line">    <span class="keyword">if</span> (newCapacity &lt; <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">&quot;Sorry, deque too big&quot;</span>);</span><br><span class="line">    Object[] a = <span class="keyword">new</span> Object[newCapacity];</span><br><span class="line">    System.arraycopy(elements, p, a, <span class="number">0</span>, r);<span class="comment">//复制右半部分，对应上图中绿色部分</span></span><br><span class="line">    System.arraycopy(elements, <span class="number">0</span>, a, r, p);<span class="comment">//复制左半部分，对应上图中灰色部分</span></span><br><span class="line">    elements = a;</span><br><span class="line">    head = <span class="number">0</span>;</span><br><span class="line">    tail = n;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <blockquote>
 <p> 结合这两张图就应该很好理解了</p>
 </blockquote>
@@ -328,24 +297,17 @@ public ArrayDeque(Collection&lt;? extends E&gt; c) &#123;
 <p>在此deque前面插入指定的元素。</p>
 </blockquote>
 <p>我们可以看到，抛出异常的<code>offerFirst</code>是调用的<code>addFirst()</code></p>
-<pre><code class="java">public boolean offerFirst(E e) &#123;
-    addFirst(e);
-    return true;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">offerFirst</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    addFirst(e);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
 <h3 id="addFirst"><a href="#addFirst" class="headerlink" title="addFirst()"></a>addFirst()</h3><blockquote>
 <p>在此deque前面插入指定的元素。</p>
 </blockquote>
 <p>接着我们来看<code>addFirst()</code></p>
 <p><code>addFirst(E e)</code>的作用是在<em>Deque</em>的首端插入元素，也就是在<code>head</code>的前面插入元素，在空间足够且下标没有越界的情况下，只需要将<code>elements[--head] = e</code>即可。</p>
-<pre><code class="java">public void addFirst(E e) &#123;
-    if (e == null) //不允许放入null
-        throw new NullPointerException();
-    elements[head = (head - 1) &amp; (elements.length - 1)] = e; //下标是否越界
-    if (head == tail) //判断数组是否够用
-        doubleCapacity(); //扩容
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addFirst</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (e == <span class="keyword">null</span>) <span class="comment">//不允许放入null</span></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">    elements[head = (head - <span class="number">1</span>) &amp; (elements.length - <span class="number">1</span>)] = e; <span class="comment">//下标是否越界</span></span><br><span class="line">    <span class="keyword">if</span> (head == tail) <span class="comment">//判断数组是否够用</span></span><br><span class="line">        doubleCapacity(); <span class="comment">//扩容</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <blockquote>
 <p> 这一段代码写的很有意思</p>
 </blockquote>
@@ -356,75 +318,48 @@ public ArrayDeque(Collection&lt;? extends E&gt; c) &#123;
 <p>在此deque的末尾插入指定的元素。</p>
 </blockquote>
 <p>同样直接调用了<code>addLast()</code></p>
-<pre><code class="java">public boolean offerLast(E e) &#123;
-    addLast(e);
-    return true;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">offerLast</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    addLast(e);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="addLast"><a href="#addLast" class="headerlink" title="addLast()"></a>addLast()</h3><blockquote>
 <p>在此deque的末尾插入指定的元素。</p>
 </blockquote>
 <p>上面的addLast提到了，tail总是指向下一个可插入空位，直接<code>elements[tail] = e</code>即可</p>
-<pre><code class="java">public void addLast(E e) &#123;
-    if (e == null)
-        throw new NullPointerException();
-    elements[tail] = e;
-    if ( (tail = (tail + 1) &amp; (elements.length - 1)) == head) //数组下标越界处理
-        doubleCapacity();
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addLast</span><span class="params">(E e)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (e == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">    elements[tail] = e;</span><br><span class="line">    <span class="keyword">if</span> ( (tail = (tail + <span class="number">1</span>) &amp; (elements.length - <span class="number">1</span>)) == head) <span class="comment">//数组下标越界处理</span></span><br><span class="line">        doubleCapacity();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
 <h2 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h2><h3 id="removeFirst"><a href="#removeFirst" class="headerlink" title="removeFirst()"></a>removeFirst()</h3><blockquote>
 <p>检索并删除此deque的第一个元素。</p>
 </blockquote>
 <p>同样是调用了<code>pollFirst()</code>，相比<code>pollFirst()</code>多抛了一个<code>NoSuchElementException()</code>的异常</p>
-<pre><code class="java">public E removeFirst() &#123;
-    E x = pollFirst();
-    if (x == null)
-        throw new NoSuchElementException();
-    return x;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">removeFirst</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    E x = pollFirst();</span><br><span class="line">    <span class="keyword">if</span> (x == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NoSuchElementException();</span><br><span class="line">    <span class="keyword">return</span> x;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
 <h3 id="pollFirst"><a href="#pollFirst" class="headerlink" title="pollFirst()"></a>pollFirst()</h3><blockquote>
 <p>检索并删除此deque的第一个元素，如果此deque为空，则返回 <code>null</code> 。</p>
 </blockquote>
 <p>开头讲到，ArrayList不允许放入null，则当<code>elements[h] = null;</code>的时候，意味着队列为空</p>
-<pre><code class="java">public E pollFirst() &#123;
-    int h = head;
-    @SuppressWarnings(&quot;unchecked&quot;)
-    E result = (E) elements[h];
-    if (result == null)
-        return null;
-    elements[h] = null;     // 队列为空
-    head = (h + 1) &amp; (elements.length - 1); //下标越界检查
-    return result;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">pollFirst</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> h = head;</span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">    E result = (E) elements[h];</span><br><span class="line">    <span class="keyword">if</span> (result == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    elements[h] = <span class="keyword">null</span>;     <span class="comment">// 队列为空</span></span><br><span class="line">    head = (h + <span class="number">1</span>) &amp; (elements.length - <span class="number">1</span>); <span class="comment">//下标越界检查</span></span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
 <h3 id="removeLast"><a href="#removeLast" class="headerlink" title="removeLast()"></a>removeLast()</h3><blockquote>
 <p>检索并删除此deque的最后一个元素。</p>
 </blockquote>
 <p>同理<code>removeFirst()</code></p>
-<pre><code class="java">public E removeLast() &#123;
-    E x = pollLast();
-    if (x == null)
-        throw new NoSuchElementException();
-    return x;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">removeLast</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    E x = pollLast();</span><br><span class="line">    <span class="keyword">if</span> (x == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NoSuchElementException();</span><br><span class="line">    <span class="keyword">return</span> x;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="pollLast"><a href="#pollLast" class="headerlink" title="pollLast()"></a>pollLast()</h3><blockquote>
 <p>检索并删除此deque的最后一个元素，如果此deque为空，则返回 <code>null</code> 。</p>
 </blockquote>
 <p>移除的是<code>tail</code>位置前一个元素</p>
-<pre><code class="java">public E pollLast() &#123;
-    int t = (tail - 1) &amp; (elements.length - 1);
-    @SuppressWarnings(&quot;unchecked&quot;)
-    E result = (E) elements[t];
-    if (result == null)
-        return null;
-    elements[t] = null;
-    tail = t;
-    return result;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">pollLast</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> t = (tail - <span class="number">1</span>) &amp; (elements.length - <span class="number">1</span>);</span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">    E result = (E) elements[t];</span><br><span class="line">    <span class="keyword">if</span> (result == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    elements[t] = <span class="keyword">null</span>;</span><br><span class="line">    tail = t;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
 <h2 id="检索"><a href="#检索" class="headerlink" title="检索"></a>检索</h2><p>这个与上面删除的区别是</p>
 <ul>
 <li>删除 = 删除元素 + 检索(返回删除的元素）</li>
@@ -434,42 +369,23 @@ public ArrayDeque(Collection&lt;? extends E&gt; c) &#123;
 <h3 id="getFirst"><a href="#getFirst" class="headerlink" title="getFirst()"></a>getFirst()</h3><blockquote>
 <p>检索，但不删除，这个deque的第一个元素。</p>
 </blockquote>
-<pre><code class="java">public E getFirst() &#123;
-    @SuppressWarnings(&quot;unchecked&quot;)
-    E result = (E) elements[head];
-    if (result == null)
-        throw new NoSuchElementException();
-    return result;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">getFirst</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">    E result = (E) elements[head];</span><br><span class="line">    <span class="keyword">if</span> (result == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NoSuchElementException();</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="peekFirst"><a href="#peekFirst" class="headerlink" title="peekFirst()"></a>peekFirst()</h3><blockquote>
 <p>检索但不删除此deque的第一个元素，如果此deque为空，则返回 <code>null</code></p>
 </blockquote>
-<pre><code class="java">@SuppressWarnings(&quot;unchecked&quot;)
-public E peekFirst() &#123;
-    // elements[head] is null if deque empty
-    return (E) elements[head];
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">peekFirst</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// elements[head] is null if deque empty</span></span><br><span class="line">    <span class="keyword">return</span> (E) elements[head];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="getLast"><a href="#getLast" class="headerlink" title="getLast()"></a>getLast()</h3><blockquote>
 <p>检索，但不删除，这个deque的最后一个元素。</p>
 </blockquote>
-<pre><code class="java">public E getLast() &#123;
-    @SuppressWarnings(&quot;unchecked&quot;)
-    E result = (E) elements[(tail - 1) &amp; (elements.length - 1)];
-    if (result == null)
-        throw new NoSuchElementException();
-    return result;
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">getLast</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line">    E result = (E) elements[(tail - <span class="number">1</span>) &amp; (elements.length - <span class="number">1</span>)];</span><br><span class="line">    <span class="keyword">if</span> (result == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NoSuchElementException();</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h3 id="peekLast"><a href="#peekLast" class="headerlink" title="peekLast()"></a>peekLast()</h3><blockquote>
 <p>检索但不删除此deque的最后一个元素，或返回 <code>null</code>如果此deque为空）。</p>
 </blockquote>
-<pre><code class="java">@SuppressWarnings(&quot;unchecked&quot;)
-public E peekLast() &#123;
-    return (E) elements[(tail - 1) &amp; (elements.length - 1)];
-&#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SuppressWarnings(&quot;unchecked&quot;)</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> E <span class="title">peekLast</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (E) elements[(tail - <span class="number">1</span>) &amp; (elements.length - <span class="number">1</span>)];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <blockquote>
 <p>注意⚠️：</p>
 <p>检索的<code>getFirst()</code>和<code>getLast()</code>会对null抛出异常</p>

@@ -262,97 +262,23 @@
 <blockquote>
 <p>static final int DEFAULT_INITIAL_CAPACITY = 1 &lt;&lt; 4;</p>
 </blockquote>
-<pre><code class="java">public HashMap(int initialCapacity) &#123;
-        this(initialCapacity, DEFAULT_LOAD_FACTOR);
-    &#125;
-</code></pre>
-<pre><code class="java">public HashMap() &#123;
-        this.loadFactor = DEFAULT_LOAD_FACTOR; // all other fields defaulted
-    &#125;
-</code></pre>
-<pre><code class="java">public HashMap(Map&lt;? extends K, ? extends V&gt; m) &#123;
-        this.loadFactor = DEFAULT_LOAD_FACTOR;
-        putMapEntries(m, false);
-    &#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">HashMap</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>(initialCapacity, DEFAULT_LOAD_FACTOR);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">HashMap</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.loadFactor = DEFAULT_LOAD_FACTOR; <span class="comment">// all other fields defaulted</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">HashMap</span><span class="params">(Map&lt;? extends K, ? extends V&gt; m)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.loadFactor = DEFAULT_LOAD_FACTOR;</span><br><span class="line">        putMapEntries(m, <span class="keyword">false</span>);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
 <p>其中，<code>DEFAULT_LOAD_FACTOR</code>也被称为负载因子，默认是<strong>0.75f</strong>。</p>
 <blockquote>
-<pre><code class="java">static final float DEFAULT_LOAD_FACTOR = 0.75f;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">float</span> DEFAULT_LOAD_FACTOR = <span class="number">0.75f</span>;</span><br></pre></td></tr></table></figure>
 </blockquote>
 <p>负载因子是衡量哈希表在容量自动增加之前允许其达到多大的度量。当散列表中的条目数量超过负载因子和当前容量的乘积时，将重处理散列表（即重建内部数据结构），使散列表的桶数约为两倍。</p>
 <p>至于为什么是0.75而不是其他，呵呵，JDK里说是泊松定律得出的0.7-0.8之间冲突最小？作为一名学习过概率论的大学僧，我也不记得了。。。</p>
 <p>这里可以参考一下<code>StackOverFlow</code>的一个回答，大意是，桶空和非空的机率是0.5，由牛顿二项性可以知道，0.75更接近于log2(0.69)，可能负载因子在0.69-0.75性能会更好，但是0.75也不是不行(可能是考虑到位运算效率比较高)</p>
 <p>![截屏2021-11-30 下午11.50.14](/Users/kokorozashiguohuang/Library/Application Support/typora-user-images/截屏2021-11-30 下午11.50.14.png)</p>
 <p>总结，负载因子太小了浪费空间并且会发生更多次数的resize，太大了哈希冲突增加会导致性能不好(增加了查找的开销)</p>
-<h2 id="方法解析"><a href="#方法解析" class="headerlink" title="方法解析"></a>方法解析</h2><h3 id="put"><a href="#put" class="headerlink" title="put()"></a>put()</h3><pre><code class="java">public V put(K key, V value) &#123;
-        return putVal(hash(key), key, value, false, true);
-    &#125;
-        //第一个参数hash(key)，获得key对应的哈希值，当key为null时，哈希值为0
-    //第二、三个参数为存储的键值对
-    //第四个参数onlyIfAbsent如果是 true，那么只有在不存在该 key 时才会进行 put 操作
-    final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
-                   boolean evict) &#123;
-        Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; p; int n, i;
-        //如果是哈希表第一次put值，会触发resize()来初始化数组长度
-        //第一次resize数组初始化到 16 OR 自定义容量 的大小
-        if ((tab = table) == null || (n = tab.length) == 0)
-            n = (tab = resize()).length;
-        //找到数组下标，如果该位置为空，则放入Node节点
-        // p为对应数组位置的链表节点
-        if ((p = tab[i = (n - 1) &amp; hash]) == null)
-            tab[i] = newNode(hash, key, value, null);
-        //该位置不为空
-        else &#123;
-            // e为辅助节点，用来记录key值与新插入节点相同的旧节点
-            Node&lt;K,V&gt; e; K k;
-            //判断该链表第一个节点和我们要插入的key是否相同，相同则取出该节点
-            //PS：之前就听说过HashMap的put会更新key对应的value值
-            if (p.hash == hash &amp;&amp;
-                ((k = p.key) == key || (key != null &amp;&amp; key.equals(k))))
-                e = p;
-            //如果该节点为红黑树节点，则调用红黑树的插入方法
-            else if (p instanceof TreeNode)
-                e = ((TreeNode&lt;K,V&gt;)p).putTreeVal(this, tab, hash, key, value);
-            //此时，可以说明该位置上是一个链表(位置不为空且不满足上述判断)
-            else &#123;
-                //遍历链表
-                for (int binCount = 0; ; ++binCount) &#123;
-                    //插入到链表的结尾(JDK7中是插入到链表的头部)
-                    if ((e = p.next) == null) &#123;
-                        p.next = newNode(hash, key, value, null);
-                        //TREEIFY_THRESHOLD为8，当插入节点后该数组链表节点为8时
-                        // 会使用treeifyBin将该链表转换为红黑树
-                        if (binCount &gt;= TREEIFY_THRESHOLD - 1) // -1 for 1st
-                            treeifyBin(tab, hash);
-                        break;
-                    &#125;
-                    //当遍历到相同key值的节点时，直接break
-                    if (e.hash == hash &amp;&amp;
-                        ((k = e.key) == key || (key != null &amp;&amp; key.equals(k))))
-                        break;
-                    //此时e为链表中与新插入节点node的key相等的旧节点
-                    p = e;
-                &#125;
-            &#125;
-            //e不为null，说明存在key相等的旧节点
-            if (e != null) &#123; // existing mapping for key
-                V oldValue = e.value;
-                if (!onlyIfAbsent || oldValue == null)
-                    //用新的value覆盖旧节点的value
-                    e.value = value;
-                afterNodeAccess(e);
-                return oldValue;
-            &#125;
-        &#125;
-        ++modCount;
-        //如果 HashMap在插入该节点后超出了阈值，则会进行扩容
-        if (++size &gt; threshold)
-            resize();
-        afterNodeInsertion(evict);
-        return null;
-    &#125;
-</code></pre>
+<h2 id="方法解析"><a href="#方法解析" class="headerlink" title="方法解析"></a>方法解析</h2><h3 id="put"><a href="#put" class="headerlink" title="put()"></a>put()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> V <span class="title">put</span><span class="params">(K key, V value)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> putVal(hash(key), key, value, <span class="keyword">false</span>, <span class="keyword">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line">		<span class="comment">//第一个参数hash(key)，获得key对应的哈希值，当key为null时，哈希值为0</span></span><br><span class="line">    <span class="comment">//第二、三个参数为存储的键值对</span></span><br><span class="line">    <span class="comment">//第四个参数onlyIfAbsent如果是 true，那么只有在不存在该 key 时才会进行 put 操作</span></span><br><span class="line">    <span class="function"><span class="keyword">final</span> V <span class="title">putVal</span><span class="params">(<span class="keyword">int</span> hash, K key, V value, <span class="keyword">boolean</span> onlyIfAbsent,</span></span></span><br><span class="line"><span class="params"><span class="function">                   <span class="keyword">boolean</span> evict)</span> </span>&#123;</span><br><span class="line">        Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; p; <span class="keyword">int</span> n, i;</span><br><span class="line">        <span class="comment">//如果是哈希表第一次put值，会触发resize()来初始化数组长度</span></span><br><span class="line">        <span class="comment">//第一次resize数组初始化到 16 OR 自定义容量 的大小</span></span><br><span class="line">        <span class="keyword">if</span> ((tab = table) == <span class="keyword">null</span> || (n = tab.length) == <span class="number">0</span>)</span><br><span class="line">            n = (tab = resize()).length;</span><br><span class="line">        <span class="comment">//找到数组下标，如果该位置为空，则放入Node节点</span></span><br><span class="line">        <span class="comment">// p为对应数组位置的链表节点</span></span><br><span class="line">        <span class="keyword">if</span> ((p = tab[i = (n - <span class="number">1</span>) &amp; hash]) == <span class="keyword">null</span>)</span><br><span class="line">            tab[i] = newNode(hash, key, value, <span class="keyword">null</span>);</span><br><span class="line">        <span class="comment">//该位置不为空</span></span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// e为辅助节点，用来记录key值与新插入节点相同的旧节点</span></span><br><span class="line">            Node&lt;K,V&gt; e; K k;</span><br><span class="line">            <span class="comment">//判断该链表第一个节点和我们要插入的key是否相同，相同则取出该节点</span></span><br><span class="line">            <span class="comment">//PS：之前就听说过HashMap的put会更新key对应的value值</span></span><br><span class="line">            <span class="keyword">if</span> (p.hash == hash &amp;&amp;</span><br><span class="line">                ((k = p.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">                e = p;</span><br><span class="line">            <span class="comment">//如果该节点为红黑树节点，则调用红黑树的插入方法</span></span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (p <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">                e = ((TreeNode&lt;K,V&gt;)p).putTreeVal(<span class="keyword">this</span>, tab, hash, key, value);</span><br><span class="line">            <span class="comment">//此时，可以说明该位置上是一个链表(位置不为空且不满足上述判断)</span></span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">//遍历链表</span></span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> binCount = <span class="number">0</span>; ; ++binCount) &#123;</span><br><span class="line">                    <span class="comment">//插入到链表的结尾(JDK7中是插入到链表的头部)</span></span><br><span class="line">                    <span class="keyword">if</span> ((e = p.next) == <span class="keyword">null</span>) &#123;</span><br><span class="line">                        p.next = newNode(hash, key, value, <span class="keyword">null</span>);</span><br><span class="line">                        <span class="comment">//TREEIFY_THRESHOLD为8，当插入节点后该数组链表节点为8时</span></span><br><span class="line">                        <span class="comment">// 会使用treeifyBin将该链表转换为红黑树</span></span><br><span class="line">                        <span class="keyword">if</span> (binCount &gt;= TREEIFY_THRESHOLD - <span class="number">1</span>) <span class="comment">// -1 for 1st</span></span><br><span class="line">                            treeifyBin(tab, hash);</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="comment">//当遍历到相同key值的节点时，直接break</span></span><br><span class="line">                    <span class="keyword">if</span> (e.hash == hash &amp;&amp;</span><br><span class="line">                        ((k = e.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    <span class="comment">//此时e为链表中与新插入节点node的key相等的旧节点</span></span><br><span class="line">                    p = e;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//e不为null，说明存在key相等的旧节点</span></span><br><span class="line">            <span class="keyword">if</span> (e != <span class="keyword">null</span>) &#123; <span class="comment">// existing mapping for key</span></span><br><span class="line">                V oldValue = e.value;</span><br><span class="line">                <span class="keyword">if</span> (!onlyIfAbsent || oldValue == <span class="keyword">null</span>)</span><br><span class="line">                    <span class="comment">//用新的value覆盖旧节点的value</span></span><br><span class="line">                    e.value = value;</span><br><span class="line">                afterNodeAccess(e);</span><br><span class="line">                <span class="keyword">return</span> oldValue;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        ++modCount;</span><br><span class="line">        <span class="comment">//如果 HashMap在插入该节点后超出了阈值，则会进行扩容</span></span><br><span class="line">        <span class="keyword">if</span> (++size &gt; threshold)</span><br><span class="line">            resize();</span><br><span class="line">        afterNodeInsertion(evict);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
 <blockquote>
 <p>关于第五个参数 evict，在出现了一下，查阅一下博客了解到，afterNodeInsertion方法的evict参数如果为false，表示哈希表处于创建模式。只有在使用Map集合作为构造器创建LinkedHashMap或HashMap时才会为false，使用其他构造器创建的LinkedHashMap，之后再调用put方法，该参数均为true。</p>
 </blockquote>
@@ -362,34 +288,8 @@
 <blockquote>
 <p>JDK7是先判断是否要扩容再插入，JDK8是先插入再判断是否要扩容，但是都无关大雅了。。。</p>
 </blockquote>
-<h3 id="get"><a href="#get" class="headerlink" title="get()"></a>get()</h3><pre><code class="java">public V get(Object key) &#123;
-        Node&lt;K,V&gt; e;
-        return (e = getNode(hash(key), key)) == null ? null : e.value;
-    &#125;
+<h3 id="get"><a href="#get" class="headerlink" title="get()"></a>get()</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> V <span class="title">get</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">        Node&lt;K,V&gt; e;</span><br><span class="line">        <span class="keyword">return</span> (e = getNode(hash(key), key)) == <span class="keyword">null</span> ? <span class="keyword">null</span> : e.value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">final</span> Node&lt;K,V&gt; <span class="title">getNode</span><span class="params">(<span class="keyword">int</span> hash, Object key)</span> </span>&#123;</span><br><span class="line">        Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; first, e; <span class="keyword">int</span> n; K k;</span><br><span class="line">        <span class="keyword">if</span> ((tab = table) != <span class="keyword">null</span> &amp;&amp; (n = tab.length) &gt; <span class="number">0</span> &amp;&amp;</span><br><span class="line">            (first = tab[(n - <span class="number">1</span>) &amp; hash]) != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">//当第一个节点就是所需要的节点时，直接return</span></span><br><span class="line">            <span class="keyword">if</span> (first.hash == hash &amp;&amp; <span class="comment">// always check first node</span></span><br><span class="line">                ((k = first.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">                <span class="keyword">return</span> first;</span><br><span class="line">            <span class="keyword">if</span> ((e = first.next) != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="comment">//当判断第一个节点是红黑树节点时，调用红黑树的get方法</span></span><br><span class="line">                <span class="keyword">if</span> (first <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">                    <span class="keyword">return</span> ((TreeNode&lt;K,V&gt;)first).getTreeNode(hash, key);</span><br><span class="line">                <span class="comment">//遍历链表</span></span><br><span class="line">                <span class="keyword">do</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> (e.hash == hash &amp;&amp;</span><br><span class="line">                        ((k = e.key) == key || (key != <span class="keyword">null</span> &amp;&amp; key.equals(k))))</span><br><span class="line">                        <span class="keyword">return</span> e;</span><br><span class="line">                &#125; <span class="keyword">while</span> ((e = e.next) != <span class="keyword">null</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
-    final Node&lt;K,V&gt; getNode(int hash, Object key) &#123;
-        Node&lt;K,V&gt;[] tab; Node&lt;K,V&gt; first, e; int n; K k;
-        if ((tab = table) != null &amp;&amp; (n = tab.length) &gt; 0 &amp;&amp;
-            (first = tab[(n - 1) &amp; hash]) != null) &#123;
-            //当第一个节点就是所需要的节点时，直接return
-            if (first.hash == hash &amp;&amp; // always check first node
-                ((k = first.key) == key || (key != null &amp;&amp; key.equals(k))))
-                return first;
-            if ((e = first.next) != null) &#123;
-                //当判断第一个节点是红黑树节点时，调用红黑树的get方法
-                if (first instanceof TreeNode)
-                    return ((TreeNode&lt;K,V&gt;)first).getTreeNode(hash, key);
-                //遍历链表
-                do &#123;
-                    if (e.hash == hash &amp;&amp;
-                        ((k = e.key) == key || (key != null &amp;&amp; key.equals(k))))
-                        return e;
-                &#125; while ((e = e.next) != null);
-            &#125;
-        &#125;
-        return null;
-    &#125;
-</code></pre>
 <blockquote>
 <p>get相比于put的操作就是小儿科罢了。。。</p>
 </blockquote>
@@ -397,99 +297,12 @@
 <blockquote>
 <p>写注释之前，一看那么长就知道是一场大战了。。。</p>
 </blockquote>
-<pre><code class="java">final Node&lt;K,V&gt;[] resize() &#123;
-        Node&lt;K,V&gt;[] oldTab = table;
-        //旧数组容量
-        int oldCap = (oldTab == null) ? 0 : oldTab.length;
-        //旧数组阈值
-        int oldThr = threshold;
-        //新数组容量OR阈值
-        int newCap, newThr = 0;
-        //开始扩容
-        if (oldCap &gt; 0) &#123;
-            //当旧数组容量&gt;=最大容量时,将阈值扩大到最大容量大小
-            //MAXIMUM_CAPACITY = 1 &lt;&lt; 30
-            if (oldCap &gt;= MAXIMUM_CAPACITY) &#123;
-                threshold = Integer.MAX_VALUE;
-                return oldTab;
-            &#125;
-            //容量/阈值扩大一倍
-            else if ((newCap = oldCap &lt;&lt; 1) &lt; MAXIMUM_CAPACITY &amp;&amp;
-                     oldCap &gt;= DEFAULT_INITIAL_CAPACITY)
-                newThr = oldThr &lt;&lt; 1; // double threshold
-        &#125;
-        // 对应使用 new HashMap(int initialCapacity) 初始化后，第一次 put 的时候
-        else if (oldThr &gt; 0) // initial capacity was placed in threshold
-            newCap = oldThr;
-        // 对应使用 new HashMap() 初始化后，第一次 put 的时候
-        else &#123;               // zero initial threshold signifies using defaults
-            newCap = DEFAULT_INITIAL_CAPACITY;
-            newThr = (int)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);
-        &#125;
-        if (newThr == 0) &#123;
-            float ft = (float)newCap * loadFactor;
-            newThr = (newCap &lt; MAXIMUM_CAPACITY &amp;&amp; ft &lt; (float)MAXIMUM_CAPACITY ?
-                      (int)ft : Integer.MAX_VALUE);
-        &#125;
-        threshold = newThr;
-        @SuppressWarnings(&#123;&quot;rawtypes&quot;,&quot;unchecked&quot;&#125;)
-        //初始化一个新数组
-        Node&lt;K,V&gt;[] newTab = (Node&lt;K,V&gt;[])new Node[newCap];
-        table = newTab;
-        //原数组为初始化数组时，到这里已经结束
-        //遍历数组进行数据迁移
-        if (oldTab != null) &#123;
-            for (int j = 0; j &lt; oldCap; ++j) &#123;
-                Node&lt;K,V&gt; e;
-                if ((e = oldTab[j]) != null) &#123;
-                    oldTab[j] = null;
-                    //当该数组只有一个元素时，直接迁移这个元素
-                    if (e.next == null)
-                        newTab[e.hash &amp; (newCap - 1)] = e;
-                    //红黑树节点的迁移
-                    else if (e instanceof TreeNode)
-                        ((TreeNode&lt;K,V&gt;)e).split(this, newTab, j, oldCap);
-                    else &#123; // preserve order
-                        //处理链表
-                        // 需要将此链表拆成两个链表，放到新的数组中，并且保留原来的先后顺序
-                        // loHead、loTail 对应一条链表的头尾，hiHead、hiTail 对应另一条链表头尾
-                        Node&lt;K,V&gt; loHead = null, loTail = null;
-                        Node&lt;K,V&gt; hiHead = null, hiTail = null;
-                        Node&lt;K,V&gt; next;
-                        do &#123;
-                            next = e.next;
-                            if ((e.hash &amp; oldCap) == 0) &#123;
-                                if (loTail == null)
-                                    loHead = e;
-                                else
-                                    loTail.next = e;
-                                loTail = e;
-                            &#125;
-                            else &#123;
-                                if (hiTail == null)
-                                    hiHead = e;
-                                else
-                                    hiTail.next = e;
-                                hiTail = e;
-                            &#125;
-                        &#125; while ((e = next) != null);
-                        if (loTail != null) &#123;
-                            loTail.next = null;
-                            //迁移第一条链表
-                            newTab[j] = loHead;
-                        &#125;
-                        if (hiTail != null) &#123;
-                            hiTail.next = null;
-                            //迁移第二条链表，放在了不同的位置上
-                            newTab[j + oldCap] = hiHead;
-                        &#125;
-                    &#125;
-                &#125;
-            &#125;
-        &#125;
-        return newTab;
-    &#125;
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> Node&lt;K,V&gt;[] resize() &#123;</span><br><span class="line">        Node&lt;K,V&gt;[] oldTab = table;</span><br><span class="line">        <span class="comment">//旧数组容量</span></span><br><span class="line">        <span class="keyword">int</span> oldCap = (oldTab == <span class="keyword">null</span>) ? <span class="number">0</span> : oldTab.length;</span><br><span class="line">        <span class="comment">//旧数组阈值</span></span><br><span class="line">        <span class="keyword">int</span> oldThr = threshold;</span><br><span class="line">        <span class="comment">//新数组容量OR阈值</span></span><br><span class="line">        <span class="keyword">int</span> newCap, newThr = <span class="number">0</span>;</span><br><span class="line">        <span class="comment">//开始扩容</span></span><br><span class="line">        <span class="keyword">if</span> (oldCap &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="comment">//当旧数组容量&gt;=最大容量时,将阈值扩大到最大容量大小</span></span><br><span class="line">            <span class="comment">//MAXIMUM_CAPACITY = 1 &lt;&lt; 30</span></span><br><span class="line">            <span class="keyword">if</span> (oldCap &gt;= MAXIMUM_CAPACITY) &#123;</span><br><span class="line">                threshold = Integer.MAX_VALUE;</span><br><span class="line">                <span class="keyword">return</span> oldTab;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//容量/阈值扩大一倍</span></span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> ((newCap = oldCap &lt;&lt; <span class="number">1</span>) &lt; MAXIMUM_CAPACITY &amp;&amp;</span><br><span class="line">                     oldCap &gt;= DEFAULT_INITIAL_CAPACITY)</span><br><span class="line">                newThr = oldThr &lt;&lt; <span class="number">1</span>; <span class="comment">// double threshold</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 对应使用 new HashMap(int initialCapacity) 初始化后，第一次 put 的时候</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (oldThr &gt; <span class="number">0</span>) <span class="comment">// initial capacity was placed in threshold</span></span><br><span class="line">            newCap = oldThr;</span><br><span class="line">        <span class="comment">// 对应使用 new HashMap() 初始化后，第一次 put 的时候</span></span><br><span class="line">        <span class="keyword">else</span> &#123;               <span class="comment">// zero initial threshold signifies using defaults</span></span><br><span class="line">            newCap = DEFAULT_INITIAL_CAPACITY;</span><br><span class="line">            newThr = (<span class="keyword">int</span>)(DEFAULT_LOAD_FACTOR * DEFAULT_INITIAL_CAPACITY);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (newThr == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">float</span> ft = (<span class="keyword">float</span>)newCap * loadFactor;</span><br><span class="line">            newThr = (newCap &lt; MAXIMUM_CAPACITY &amp;&amp; ft &lt; (<span class="keyword">float</span>)MAXIMUM_CAPACITY ?</span><br><span class="line">                      (<span class="keyword">int</span>)ft : Integer.MAX_VALUE);</span><br><span class="line">        &#125;</span><br><span class="line">        threshold = newThr;</span><br><span class="line">        <span class="meta">@SuppressWarnings(&#123;&quot;rawtypes&quot;,&quot;unchecked&quot;&#125;)</span></span><br><span class="line">        <span class="comment">//初始化一个新数组</span></span><br><span class="line">        Node&lt;K,V&gt;[] newTab = (Node&lt;K,V&gt;[])<span class="keyword">new</span> Node[newCap];</span><br><span class="line">        table = newTab;</span><br><span class="line">        <span class="comment">//原数组为初始化数组时，到这里已经结束</span></span><br><span class="line">        <span class="comment">//遍历数组进行数据迁移</span></span><br><span class="line">        <span class="keyword">if</span> (oldTab != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; oldCap; ++j) &#123;</span><br><span class="line">                Node&lt;K,V&gt; e;</span><br><span class="line">                <span class="keyword">if</span> ((e = oldTab[j]) != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    oldTab[j] = <span class="keyword">null</span>;</span><br><span class="line">                    <span class="comment">//当该数组只有一个元素时，直接迁移这个元素</span></span><br><span class="line">                    <span class="keyword">if</span> (e.next == <span class="keyword">null</span>)</span><br><span class="line">                        newTab[e.hash &amp; (newCap - <span class="number">1</span>)] = e;</span><br><span class="line">                    <span class="comment">//红黑树节点的迁移</span></span><br><span class="line">                    <span class="keyword">else</span> <span class="keyword">if</span> (e <span class="keyword">instanceof</span> TreeNode)</span><br><span class="line">                        ((TreeNode&lt;K,V&gt;)e).split(<span class="keyword">this</span>, newTab, j, oldCap);</span><br><span class="line">                    <span class="keyword">else</span> &#123; <span class="comment">// preserve order</span></span><br><span class="line">                        <span class="comment">//处理链表</span></span><br><span class="line">                        <span class="comment">// 需要将此链表拆成两个链表，放到新的数组中，并且保留原来的先后顺序</span></span><br><span class="line">                        <span class="comment">// loHead、loTail 对应一条链表的头尾，hiHead、hiTail 对应另一条链表头尾</span></span><br><span class="line">                        Node&lt;K,V&gt; loHead = <span class="keyword">null</span>, loTail = <span class="keyword">null</span>;</span><br><span class="line">                        Node&lt;K,V&gt; hiHead = <span class="keyword">null</span>, hiTail = <span class="keyword">null</span>;</span><br><span class="line">                        Node&lt;K,V&gt; next;</span><br><span class="line">                        <span class="keyword">do</span> &#123;</span><br><span class="line">                            next = e.next;</span><br><span class="line">                            <span class="keyword">if</span> ((e.hash &amp; oldCap) == <span class="number">0</span>) &#123;</span><br><span class="line">                                <span class="keyword">if</span> (loTail == <span class="keyword">null</span>)</span><br><span class="line">                                    loHead = e;</span><br><span class="line">                                <span class="keyword">else</span></span><br><span class="line">                                    loTail.next = e;</span><br><span class="line">                                loTail = e;</span><br><span class="line">                            &#125;</span><br><span class="line">                            <span class="keyword">else</span> &#123;</span><br><span class="line">                                <span class="keyword">if</span> (hiTail == <span class="keyword">null</span>)</span><br><span class="line">                                    hiHead = e;</span><br><span class="line">                                <span class="keyword">else</span></span><br><span class="line">                                    hiTail.next = e;</span><br><span class="line">                                hiTail = e;</span><br><span class="line">                            &#125;</span><br><span class="line">                        &#125; <span class="keyword">while</span> ((e = next) != <span class="keyword">null</span>);</span><br><span class="line">                        <span class="keyword">if</span> (loTail != <span class="keyword">null</span>) &#123;</span><br><span class="line">                            loTail.next = <span class="keyword">null</span>;</span><br><span class="line">                            <span class="comment">//迁移第一条链表</span></span><br><span class="line">                            newTab[j] = loHead;</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">if</span> (hiTail != <span class="keyword">null</span>) &#123;</span><br><span class="line">                            hiTail.next = <span class="keyword">null</span>;</span><br><span class="line">                            <span class="comment">//迁移第二条链表，放在了不同的位置上</span></span><br><span class="line">                            newTab[j + oldCap] = hiHead;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> newTab;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
 <h2 id="HashSet"><a href="#HashSet" class="headerlink" title="HashSet"></a>HashSet</h2><blockquote>
 <p>你以为还没结束嘛？不不不，HashSet是对HashMap的进一层包装，内部对应的方法都是调用HashMap的，是不是很懒？</p>
 </blockquote>

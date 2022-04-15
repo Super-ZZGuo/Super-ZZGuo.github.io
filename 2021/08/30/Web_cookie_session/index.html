@@ -279,16 +279,16 @@
 </ul>
 <p>1、先创建一个要修改的同名（指的就是 key）的 Cookie 对象</p>
 <p>2、在构造器，同时赋于<strong>新的</strong>Cookie 值。</p>
-<pre><code class="java">Cookie cookie = new Cookie(&quot;key1&quot;,&quot;newValue1&quot;);
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cookie cookie = <span class="keyword">new</span> Cookie(<span class="string">&quot;key1&quot;</span>,<span class="string">&quot;newValue1&quot;</span>);</span><br></pre></td></tr></table></figure>
+
 <p>3、调用<code>response.addCookie(Cookie)</code>;</p>
 <ul>
 <li>方案二：</li>
 </ul>
 <p>1、先查找到需要修改的 Cookie 对象</p>
 <p>2、调用<code>setValue()</code>方法赋于新的 Cookie 值。</p>
-<pre><code class="java">cookie.setValue(&quot;newValue2&quot;);
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cookie.setValue(<span class="string">&quot;newValue2&quot;</span>);</span><br></pre></td></tr></table></figure>
+
 <p>3、调用<code>response.addCookie()</code>通知客户端保存修改</p>
 <blockquote>
 <p>区别:</p>
@@ -339,8 +339,8 @@
 <ul>
 <li>代码如下:</li>
 </ul>
-<pre><code class="java">cookie.setPath( req.getContextPath() + &quot;/abc&quot; );
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cookie.setPath( req.getContextPath() + <span class="string">&quot;/abc&quot;</span> );</span><br></pre></td></tr></table></figure>
+
 <hr>
 <h3 id="Cookie-验证登录的一个简单流程"><a href="#Cookie-验证登录的一个简单流程" class="headerlink" title="Cookie 验证登录的一个简单流程"></a>Cookie 验证登录的一个简单流程</h3><p><img src="/2021/08/30/Web_cookie_session/19.jpg"></p>
 <blockquote>
@@ -371,9 +371,8 @@
 <hr>
 <h3 id="Session-域数据的存取"><a href="#Session-域数据的存取" class="headerlink" title="Session 域数据的存取"></a>Session 域数据的存取</h3><p><code>setAttribute()</code>设置当前 Session 的域数据</p>
 <p><code>getAttribute()</code>获取当前 Session 的域数据</p>
-<pre><code class="java">req.getSession().setAttribute(&quot;key1&quot;, &quot;value1&quot;);
-req.getSession().getAttribute(&quot;key1&quot;);
-</code></pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">req.getSession().setAttribute(<span class="string">&quot;key1&quot;</span>, <span class="string">&quot;value1&quot;</span>);</span><br><span class="line">req.getSession().getAttribute(<span class="string">&quot;key1&quot;</span>);</span><br></pre></td></tr></table></figure>
+
 <h3 id="Session-生命周期控制"><a href="#Session-生命周期控制" class="headerlink" title="Session 生命周期控制"></a>Session 生命周期控制</h3><ul>
 <li><code>session.setMaxInactiveInterval(int interval)</code></li>
 </ul>

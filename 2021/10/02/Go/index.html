@@ -270,13 +270,8 @@
 </blockquote>
 <p>切片是基于数组类型的一层封装，是对数组一个连续片段的<strong>引用</strong>(意味着多个切片表示用一个数组片段的话，那这几个切片可以共享数据！)</p>
 <p>切片的数据结构 = 指向底层数组的指针 + 切片长度 + 切片容量<strong>（切片本身就是一个指针！）</strong></p>
-<pre><code class="go">//切片的本质
-arr := [...]int&#123;1,2,3,4&#125;
-slice := []int&#123;1,2,3,4&#125;
-fmt.Printf(&quot;arr的首地址为：%p\n&quot;, &amp;arr)
-//切片本身就是一个指针，打印地址的时候无需&amp;地址引用
-fmt.Printf(&quot;slice的首地址为：%p\n&quot;, slice)
-</code></pre>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//切片的本质</span></span><br><span class="line">arr := [...]<span class="keyword">int</span>&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>&#125;</span><br><span class="line">slice := []<span class="keyword">int</span>&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>&#125;</span><br><span class="line">fmt.Printf(<span class="string">&quot;arr的首地址为：%p\n&quot;</span>, &amp;arr)</span><br><span class="line"><span class="comment">//切片本身就是一个指针，打印地址的时候无需&amp;地址引用</span></span><br><span class="line">fmt.Printf(<span class="string">&quot;slice的首地址为：%p\n&quot;</span>, slice)</span><br></pre></td></tr></table></figure>
+
 <p>nil切片(表示不存在的切片)指向底层数组的指针为nil，空切片(表示空集合)的指针则是一个地址</p>
 <p><code>len(slice)</code>:返回切片<code>slice</code>的长度</p>
 <p><code>cap(slice)</code>:返回切片<code>slice</code>的容量</p>
@@ -297,14 +292,8 @@ fmt.Printf(&quot;slice的首地址为：%p\n&quot;, slice)
 </ul>
 </li>
 </ul>
-<pre><code class="go">//测试append扩容
-var i int
-var testSlice []int
-for i = 0 ;i &lt; 1100; i++&#123;
-   testSlice = append(testSlice,i)
-   fmt.Println(cap(testSlice))
-&#125;
-</code></pre>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//测试append扩容</span></span><br><span class="line"><span class="keyword">var</span> i <span class="keyword">int</span></span><br><span class="line"><span class="keyword">var</span> testSlice []<span class="keyword">int</span></span><br><span class="line"><span class="keyword">for</span> i = <span class="number">0</span> ;i &lt; <span class="number">1100</span>; i++&#123;</span><br><span class="line">   testSlice = <span class="built_in">append</span>(testSlice,i)</span><br><span class="line">   fmt.Println(<span class="built_in">cap</span>(testSlice))</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
 <p>在**$GOROOT /src/runtime/slice.go** 可以查看关于append扩容的相关代码</p>
 <p><img src="/2021/10/02/Go/slice.png"></p>
 <p><code>copy(dst,src)</code>：复制元素src到目标dst，返回复制元素的个数</p>
@@ -313,25 +302,10 @@ for i = 0 ;i &lt; 1100; i++&#123;
 </ul>
 <h3 id="Range关键字"><a href="#Range关键字" class="headerlink" title="Range关键字"></a>Range关键字</h3><p>Range一般配合For进行遍历，能迭代遍历数组、切片、Map、channel等</p>
 <p>遍历切片的一个样例（同理数组）：</p>
-<pre><code class="go">//使用index索引和value值
-    fmt.Println(&quot;---------使用index索引和value值---------&quot;)
-    array := []int&#123;1,2,3,4,5&#125;
-    for index,value := range array&#123;
-        fmt.Printf(&quot;切片索引是：%d 的值是：%d \n&quot; ,index,value)
-    &#125;
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//使用index索引和value值</span></span><br><span class="line">	fmt.Println(<span class="string">&quot;---------使用index索引和value值---------&quot;</span>)</span><br><span class="line">	array := []<span class="keyword">int</span>&#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>&#125;</span><br><span class="line">	<span class="keyword">for</span> index,value := <span class="keyword">range</span> array&#123;</span><br><span class="line">		fmt.Printf(<span class="string">&quot;切片索引是：%d 的值是：%d \n&quot;</span> ,index,value)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//只使用i索引来获取数组的值</span></span><br><span class="line">	fmt.Println(<span class="string">&quot;---------只使用i索引来获取数组的值---------&quot;</span>)</span><br><span class="line">	<span class="keyword">for</span> i , _ := <span class="keyword">range</span> array&#123;</span><br><span class="line">		fmt.Printf(<span class="string">&quot;切片索引是：%d 的值是：%d \n&quot;</span> ,i,array[i])</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//只使用v值</span></span><br><span class="line">	fmt.Println(<span class="string">&quot;---------只使用v值---------&quot;</span>)</span><br><span class="line">	<span class="keyword">for</span> _ , v := <span class="keyword">range</span> array&#123;</span><br><span class="line">		fmt.Printf(<span class="string">&quot;切片的值是：%d \n&quot;</span> ,v)</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
 
-    //只使用i索引来获取数组的值
-    fmt.Println(&quot;---------只使用i索引来获取数组的值---------&quot;)
-    for i , _ := range array&#123;
-        fmt.Printf(&quot;切片索引是：%d 的值是：%d \n&quot; ,i,array[i])
-    &#125;
 
-    //只使用v值
-    fmt.Println(&quot;---------只使用v值---------&quot;)
-    for _ , v := range array&#123;
-        fmt.Printf(&quot;切片的值是：%d \n&quot; ,v)
-    &#125;
-</code></pre>
+
 <blockquote>
 <p>一些注意事项：</p>
 <ul>
@@ -345,12 +319,8 @@ for i = 0 ;i &lt; 1100; i++&#123;
 <p>map和切片类似，是引用类型</p>
 <h3 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h3><p>传递指针能使多个函数明确操作同一个对象</p>
 <p>传递指针相比于传递体积较大的结构体更轻量化（8bytes）</p>
-<h4 id="defer延迟函数"><a href="#defer延迟函数" class="headerlink" title="defer延迟函数"></a>defer延迟函数</h4><pre><code class="go">str := &quot;string&quot;
-fmt.Printf(&quot;%s \n&quot;,string(str))
-for _ , v := range str&#123;
-   defer fmt.Printf(&quot;%c&quot;,v)
-&#125;
-</code></pre>
+<h4 id="defer延迟函数"><a href="#defer延迟函数" class="headerlink" title="defer延迟函数"></a>defer延迟函数</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">str := <span class="string">&quot;string&quot;</span></span><br><span class="line">fmt.Printf(<span class="string">&quot;%s \n&quot;</span>,<span class="keyword">string</span>(str))</span><br><span class="line"><span class="keyword">for</span> _ , v := <span class="keyword">range</span> str&#123;</span><br><span class="line">   <span class="keyword">defer</span> fmt.Printf(<span class="string">&quot;%c&quot;</span>,v)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>注意点:</p>
 <ul>
 <li>一个函数中当所有延迟操作都完成后，该函数才算完成（外围函数的语句执行完毕时，只有当延迟函数都执行完毕，该外围函数才算结束执行）</li>
@@ -373,23 +343,8 @@ for _ , v := range str&#123;
 <p>未完待续。。。</p>
 <h3 id="错误"><a href="#错误" class="headerlink" title="错误"></a>错误</h3><p>使用 <code>defer</code>+  <code>recover()</code>来捕获\处理异常<code>panic</code></p>
 <p>一个简单的demo：</p>
-<pre><code class="go">func test()&#123;
-   defer func() &#123;
-      err := recover() //捕获异常
-      if err != nil &#123;  //说明捕获到异常
-         fmt.Println(&quot;捕获到异常：&quot;, err)
-      &#125;
-   &#125;()
-   num1 := 10
-   num2 := 0
-   res := num1 / num2
-   fmt.Printf(&quot;计算结果为: %d&quot;,res )
-&#125;
-func main()&#123;
-   test()
-   fmt.Println(&quot;程序正常运行...&quot;)
-&#125;
-</code></pre>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">   <span class="keyword">defer</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">      err := <span class="built_in">recover</span>() <span class="comment">//捕获异常</span></span><br><span class="line">      <span class="keyword">if</span> err != <span class="literal">nil</span> &#123;  <span class="comment">//说明捕获到异常</span></span><br><span class="line">         fmt.Println(<span class="string">&quot;捕获到异常：&quot;</span>, err)</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;()</span><br><span class="line">   num1 := <span class="number">10</span></span><br><span class="line">   num2 := <span class="number">0</span></span><br><span class="line">   res := num1 / num2</span><br><span class="line">   fmt.Printf(<span class="string">&quot;计算结果为: %d&quot;</span>,res )</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">   test()</span><br><span class="line">   fmt.Println(<span class="string">&quot;程序正常运行...&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p>控制台输出：<br><img src="/2021/10/02/Go/error1.png"></p>
 <blockquote>
 <p>Tips:</p>
@@ -407,17 +362,8 @@ func main()&#123;
 <blockquote>
 <p>这类结构体一般命名为<code>xxxError</code></p>
 </blockquote>
-<pre><code class="go">//使用结构体的方式能自定义/提供更多的错误信息
-type radiusError struct &#123;
-   err string
-   radius float64
-   area float64
-&#125;
-//实现error接口
-func (e *radiusError) Error() string &#123;
-   return fmt.Sprintf(&quot;输入半径为：%0.2f，报错信息： %s，计算出面积为：%0.2f&quot;, e.radius, e.err, e.area)
-&#125;
-</code></pre>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//使用结构体的方式能自定义/提供更多的错误信息</span></span><br><span class="line"><span class="keyword">type</span> radiusError <span class="keyword">struct</span> &#123;</span><br><span class="line">   err <span class="keyword">string</span></span><br><span class="line">   radius <span class="keyword">float64</span></span><br><span class="line">   area <span class="keyword">float64</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//实现error接口</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(e *radiusError)</span> <span class="title">Error</span><span class="params">()</span> <span class="title">string</span></span> &#123;</span><br><span class="line">   <span class="keyword">return</span> fmt.Sprintf(<span class="string">&quot;输入半径为：%0.2f，报错信息： %s，计算出面积为：%0.2f&quot;</span>, e.radius, e.err, e.area)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <p><code>errors.New</code> ：可以返回一个自定义的错误信息</p>
 <p><code>fmt.Errorf</code>：可以返回一个自定义的错误信息(格式化)</p>
 <h3 id="包管理"><a href="#包管理" class="headerlink" title="包管理"></a>包管理</h3><h4 id="init-函数"><a href="#init-函数" class="headerlink" title="init()函数"></a><code>init()函数</code></h4><p>一般用于初始化包所需要的特定资料，和<code>main()</code>函数作为Go中的保留函数</p>
@@ -457,26 +403,8 @@ func (e *radiusError) Error() string &#123;
 <p>量级：<strong>进程</strong> &gt; <strong>线程</strong> &gt; <strong>协程</strong></p>
 <h4 id="Goroutine"><a href="#Goroutine" class="headerlink" title="Goroutine"></a>Goroutine</h4><p>在函数和方法调用前加上<code>go</code>,会同时运行一个新的Goroutine</p>
 <p>一个小demo：</p>
-<pre><code class="go">func numbers()&#123;
-   for i:=0 ; i &lt;= 5 ; i++&#123;
-      time.Sleep(250 * time.Millisecond)
-      fmt.Printf(&quot;%d &quot;,i)
-   &#125;
-&#125;
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">numbers</span><span class="params">()</span></span>&#123;</span><br><span class="line">   <span class="keyword">for</span> i:=<span class="number">0</span> ; i &lt;= <span class="number">5</span> ; i++&#123;</span><br><span class="line">      time.Sleep(<span class="number">250</span> * time.Millisecond)</span><br><span class="line">      fmt.Printf(<span class="string">&quot;%d &quot;</span>,i)</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">alphabets</span><span class="params">()</span></span>&#123;</span><br><span class="line">   <span class="keyword">for</span> i:=<span class="string">&#x27;a&#x27;</span> ; i &lt;= <span class="string">&#x27;e&#x27;</span> ; i++&#123;</span><br><span class="line">      time.Sleep(<span class="number">400</span> * time.Millisecond)</span><br><span class="line">      fmt.Printf(<span class="string">&quot;%c &quot;</span>,i)</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">   <span class="keyword">go</span> numbers()</span><br><span class="line">   <span class="keyword">go</span> alphabets()</span><br><span class="line">   time.Sleep(<span class="number">5</span> * time.Second)</span><br><span class="line">   fmt.Println(<span class="string">&quot;main terminated&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-func alphabets()&#123;
-   for i:=&#39;a&#39; ; i &lt;= &#39;e&#39; ; i++&#123;
-      time.Sleep(400 * time.Millisecond)
-      fmt.Printf(&quot;%c &quot;,i)
-   &#125;
-&#125;
-func main()&#123;
-   go numbers()
-   go alphabets()
-   time.Sleep(5 * time.Second)
-   fmt.Println(&quot;main terminated&quot;)
-&#125;
-</code></pre>
 <p>运行结果：</p>
 <p><img src="/2021/10/02/Go/Goroutine1.png"></p>
 <h4 id="并发模型"><a href="#并发模型" class="headerlink" title="并发模型"></a>并发模型</h4><h5 id="线程模型"><a href="#线程模型" class="headerlink" title="线程模型"></a>线程模型</h5><ul>
@@ -511,41 +439,14 @@ func main()&#123;
 <li><p><strong><code>GOROOT</code></strong> :获取goroot目录</p>
 </li>
 <li><p>**<code>Gosched</code>**：让当前线程让出 <code>cpu</code> 以让其它线程运行,它不会挂起当前线程，因此当前线程未来会继续执行</p>
-<pre><code class="go">go func() &#123;
-   for i := 0; i &lt; 5; i++ &#123;
-      fmt.Println(&quot;goroutine执行中。。。&quot;)
-   &#125;
-   fmt.Println(&quot;goroutine执行完毕。&quot;)
-&#125;()
-for i := 0; i &lt; 4; i++ &#123;
-   //让出时间片，先让别的协议执行，它执行完，再回来执行此协程
-   runtime.Gosched()
-   fmt.Println(&quot;main执行中。。。&quot;)
-&#125;
-fmt.Println(&quot;main执行完毕&quot;)
-</code></pre>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">   <span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">5</span>; i++ &#123;</span><br><span class="line">      fmt.Println(<span class="string">&quot;goroutine执行中。。。&quot;</span>)</span><br><span class="line">   &#125;</span><br><span class="line">   fmt.Println(<span class="string">&quot;goroutine执行完毕。&quot;</span>)</span><br><span class="line">&#125;()</span><br><span class="line"><span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">4</span>; i++ &#123;</span><br><span class="line">   <span class="comment">//让出时间片，先让别的协议执行，它执行完，再回来执行此协程</span></span><br><span class="line">   runtime.Gosched()</span><br><span class="line">   fmt.Println(<span class="string">&quot;main执行中。。。&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line">fmt.Println(<span class="string">&quot;main执行完毕&quot;</span>)</span><br></pre></td></tr></table></figure>
+
 <p>运行结果：</p>
 <p><img src="/2021/10/02/Go/Goroutine5.png"></p>
 </li>
 <li><p>**<code>Goexit</code>**：退出当前 <code>goroutine</code>(但是<code>defer</code>语句会照常执行)</p>
-<pre><code class="go">func main()&#123;
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span>&#123;</span><br><span class="line"></span><br><span class="line">      fmt.Println(<span class="string">&quot;开始一个goroutine&quot;</span>)</span><br><span class="line">      <span class="keyword">defer</span> fmt.Println(<span class="string">&quot;开始defer。。。&quot;</span>)</span><br><span class="line"></span><br><span class="line">      <span class="comment">//终止所在的协程</span></span><br><span class="line">      runtime.Goexit()</span><br><span class="line"></span><br><span class="line">      fmt.Println(<span class="string">&quot;goroutine结束&quot;</span>)</span><br><span class="line">   &#125;()</span><br><span class="line"></span><br><span class="line">   <span class="comment">//区分主协程</span></span><br><span class="line">   time.Sleep(<span class="number">5</span> * time.Second)</span><br><span class="line">   fmt.Println(<span class="string">&quot;主goroutine即将结束&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-   go func()&#123;
-
-      fmt.Println(&quot;开始一个goroutine&quot;)
-      defer fmt.Println(&quot;开始defer。。。&quot;)
-
-      //终止所在的协程
-      runtime.Goexit()
-
-      fmt.Println(&quot;goroutine结束&quot;)
-   &#125;()
-
-   //区分主协程
-   time.Sleep(5 * time.Second)
-   fmt.Println(&quot;主goroutine即将结束&quot;)
-&#125;
-</code></pre>
 <p>运行结果：</p>
 <blockquote>
 <p>可以看到下面的goroutine打印的信息并没有出来，而<strong>defer</strong>打印的信息却出来了</p>
@@ -565,12 +466,8 @@ fmt.Println(&quot;main执行完毕&quot;)
 <p>Tips:</p>
 <p>可以通过ok是否为true和flase来检查通道是否关闭</p>
 </blockquote>
-<pre><code>v, ok := &lt;-ch
-if !ok &#123;
-   fmt.Println(&quot;&quot;)
-   break
-&#125;
-</code></pre>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">v, ok := &lt;-ch</span><br><span class="line">if !ok &#123;</span><br><span class="line">   fmt.Println(&quot;&quot;)</span><br><span class="line">   break</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <h5 id="缓冲通道"><a href="#缓冲通道" class="headerlink" title="缓冲通道"></a>缓冲通道</h5><p><code>ch := make(chan type,  capacity)</code></p>
 <h5 id="定向通道"><a href="#定向通道" class="headerlink" title="定向通道"></a>定向通道</h5><p><code>ch := make(chan &lt;- int)</code>:单向通道 只写</p>
 <p><code>ch := make(&lt;- chan int)</code>:单向通道 只读</p>

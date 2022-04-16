@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.superzzguo.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":"default"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="概述引入缓存能提高应用的性能，但是也会存在缓存与数据库在「读写并发」等情况下出现的数据不一致问题,这里记录一下可用方案的理论基础，权当作为知识扩展">
+<meta property="og:type" content="article">
+<meta property="og:title" content="谈谈缓存与数据库一致性问题">
+<meta property="og:url" content="http://www.superzzguo.com/2022/04/16/DB-DataConsistency/index.html">
+<meta property="og:site_name" content="得闲饮茶の阿伯">
+<meta property="og:description" content="概述引入缓存能提高应用的性能，但是也会存在缓存与数据库在「读写并发」等情况下出现的数据不一致问题,这里记录一下可用方案的理论基础，权当作为知识扩展">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-03-05%20%E4%B8%8B%E5%8D%8810.18.47.png">
+<meta property="og:image" content="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-03-05%20%E4%B8%8B%E5%8D%8810.19.05.png">
+<meta property="article:published_time" content="2022-04-16T13:50:03.658Z">
+<meta property="article:modified_time" content="2022-04-16T13:51:54.186Z">
+<meta property="article:author" content="ZZGuo">
+<meta property="article:tag" content="知识扩展">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-03-05%20%E4%B8%8B%E5%8D%8810.18.47.png">
+
+<link rel="canonical" href="http://www.superzzguo.com/2022/04/16/DB-DataConsistency/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>谈谈缓存与数据库一致性问题 | 得闲饮茶の阿伯</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">得闲饮茶の阿伯</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">三点半饮杯啡，食个包</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">15</span></a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类<span class="badge">10</span></a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">22</span></a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.superzzguo.com/2022/04/16/DB-DataConsistency/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/head.jpeg">
+      <meta itemprop="name" content="ZZGuo">
+      <meta itemprop="description" content="饮茶先啦">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="得闲饮茶の阿伯">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          谈谈缓存与数据库一致性问题
+        </h1>
+
+        <div class="post-meta">
+
+
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-04-16 21:50:03 / 修改时间：21:51:54" itemprop="dateCreated datePublished" datetime="2022-04-16T21:50:03+08:00">2022-04-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>引入缓存能提高应用的性能，但是也会存在缓存与数据库在「读写并发」等情况下出现的数据不一致问题,<br>这里记录一下可用方案的理论基础，权当作为知识扩展</p>
+<span id="more"></span>
+
+<h1 id="谈谈缓存与数据库一致性问题"><a href="#谈谈缓存与数据库一致性问题" class="headerlink" title="谈谈缓存与数据库一致性问题"></a>谈谈缓存与数据库一致性问题</h1><blockquote>
+<p>引入缓存能提高应用的性能，但是也会存在缓存与数据库在「读写并发」等情况下出现的数据不一致问题</p>
+</blockquote>
+<p>这里记录一下可用的方案，权当作为知识扩展</p>
+<h2 id="一些读写策略"><a href="#一些读写策略" class="headerlink" title="一些读写策略"></a>一些读写策略</h2><h3 id="旁路缓存模式"><a href="#旁路缓存模式" class="headerlink" title="旁路缓存模式"></a>旁路缓存模式</h3><p>适用于读请求比较多的场景，以DB数据为主</p>
+<h4 id="基础操作"><a href="#基础操作" class="headerlink" title="基础操作"></a>基础操作</h4><p>写操作：</p>
+<ul>
+<li>先更新DB，后删除cache</li>
+</ul>
+<p>读操作：</p>
+<ul>
+<li>先读cache，有则直接返回</li>
+<li>cache没有，则从DB中读取数据，客户端再用DB读到的数据更新cache</li>
+</ul>
+<blockquote>
+<p>下面会详细谈谈这种模式</p>
+</blockquote>
+<h3 id="读写穿透模式"><a href="#读写穿透模式" class="headerlink" title="读写穿透模式"></a>读写穿透模式</h3><p>与上述的模式不同，该模式以cache数据为主，并要求<strong>缓存</strong>能提供<code>将cache数据写入DB的功能</code></p>
+<h4 id="基础操作-1"><a href="#基础操作-1" class="headerlink" title="基础操作"></a>基础操作</h4><p>写操作：</p>
+<ul>
+<li>先查cache，cache中不存在时，则直接更新DB</li>
+<li>若cache中存在，则先更新cache，然后由缓存服务自己更新DB(同步更新)</li>
+</ul>
+<p>读操作：</p>
+<ul>
+<li>先从cache中读，有则直接返回</li>
+<li>cache没有，cache服务先从DB加载，再由cache服务返回</li>
+</ul>
+<h4 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h4><blockquote>
+<p>与<code>旁路缓存模式</code>的读写请求由客户端处理不同，<code>读写穿透模式</code>则是交给cache服务来处理</p>
+</blockquote>
+<blockquote>
+<p>将数据的读写操作交给cache服务管理：优点减轻了客户端的指责，但是Redis并没有提供将数据写入DB的能力，依然需要我们自己操控；其次，在写操作中，同步更新DB等以cache服务为主的性能影响暂且不谈</p>
+</blockquote>
+<h3 id="异步缓存写入"><a href="#异步缓存写入" class="headerlink" title="异步缓存写入"></a>异步缓存写入</h3><p>与<code>读写穿透模式</code>类似，由cache服务负责读写</p>
+<p>不同的是，写操作中，只更新cache，而对DB则作为异步更新</p>
+<p>优点在于：用一致性换取了优秀的写性能，适用于数据经常变化却又对数据一致性要求不高的场景，如浏览量、点赞量等</p>
+<p>缺点则是：无法保证cache服务的可用性，cache服务挂了则更新不了DB（是否可以通过搭建集群来解决？）</p>
+<p>异步写入也常见于<strong>MySQL</strong>的<code>InnoDB Buffer Pool机制</code></p>
+<h2 id="旁路缓存模式的可用性"><a href="#旁路缓存模式的可用性" class="headerlink" title="旁路缓存模式的可用性"></a>旁路缓存模式的可用性</h2><blockquote>
+<p>上述三种策略可以了解到，旁路缓存似乎是限制最少的策略，而我在浏览博客等信息的时候，现在流行的缓存策略也是基于旁路缓存模式</p>
+</blockquote>
+<h3 id="为什么不使用更新数据库-更新缓存的方案呢？"><a href="#为什么不使用更新数据库-更新缓存的方案呢？" class="headerlink" title="为什么不使用更新数据库+更新缓存的方案呢？"></a>为什么不使用更新数据库+更新缓存的方案呢？</h3><p>这似乎在逻辑上比较合理</p>
+<p>但是考虑到现实的问题是，高速缓存的成本不低，其次这样做「缓存利用率」就比较低，且日常场景中，「读操作」远大于「写操作」，缓存应当存取<strong>热点数据</strong>亦或是「有用」数据，虽然会有相对应的<strong>缓存/删除淘汰策略</strong>，但是依然会造成机器性能的浪费，而缓存的更新则交给<strong>读操作</strong>处理</p>
+<h3 id="论证先更新数据库，后删除缓存方案的优越性"><a href="#论证先更新数据库，后删除缓存方案的优越性" class="headerlink" title="论证先更新数据库，后删除缓存方案的优越性"></a>论证先<code>更新数据库，后删除缓存</code>方案的优越性</h3><p>首先模拟一个经典的「读写」并发情况：</p>
+<ul>
+<li>缓存中值Num不存在（数据库中存在）</li>
+<li><strong>读线程A</strong>发现缓存中没有，去数据库读取Num（Num = 1）</li>
+<li><strong>写线程B</strong>更新数据库（Num = 2）</li>
+<li><strong>写线程B</strong>删除缓存（delete Num）</li>
+<li><strong>读线程A</strong>将Num = 1写入缓存 （Num = 1）</li>
+</ul>
+<p>最终Num在缓存中的值还是为旧值1，而在数据库中为新值2</p>
+<p>这样看来<code>更新数据库，后删除缓存</code>似乎并没有达成数据的一致性</p>
+<p>然而这样发生的几率相比于<code>先删除缓存，后更新数据库</code>是低很多的，要求达到如下情况：</p>
+<ul>
+<li>缓存刚好失效，<strong>读线程A</strong>才会将旧值写入缓存</li>
+<li>「读写」请求刚好并发</li>
+<li>且要求<code>写数据库+删除缓存时间</code>比<code>读数据库+写缓存时间短</code><ul>
+<li>操作缓存的速度暂且不谈</li>
+<li><strong>写数据库操作</strong>一般会比<strong>读数据库操作</strong>时间更长</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>自己可以想一下，三个条件不满足一个就不会出现数据不一致问题</p>
+<p>其次先<code>删除缓存，再更新数据库</code>的方案就不赘述了</p>
+</blockquote>
+<h3 id="如何保证更新数据库、删除缓存两步操作的高可用性"><a href="#如何保证更新数据库、删除缓存两步操作的高可用性" class="headerlink" title="如何保证更新数据库、删除缓存两步操作的高可用性"></a>如何保证更新数据库、删除缓存两步操作的高可用性</h3><p>开门见上，本质是通过「重试」来保证两部操作的可用性</p>
+<ul>
+<li>更新数据库操作失败，则在客户端设立好<strong>兜底方法</strong>或<strong>不断重试</strong></li>
+<li>删除缓存失败，则交给消息队列操作<ul>
+<li>消息队列的可靠性能<strong>保证删除缓存操作</strong>能够成功</li>
+</ul>
+</li>
+</ul>
+<img src="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-03-05%20%E4%B8%8B%E5%8D%8810.18.47.png" alt="截屏2022-03-05 下午10.18.47" style="zoom: 50%;">
+
+<p>一个较简单且流行的方案是：</p>
+<ul>
+<li><p>订阅数据库的Binlog变更日志（开源中间件Canal或者数据库本身支持）</p>
+</li>
+<li><p>根据变更操作将删除缓存操作投递给消息队列</p>
+</li>
+<li><p>消息队列再删除缓存</p>
+<p><img src="https://img.superzzguo.com/blog/%E6%88%AA%E5%B1%8F2022-03-05%20%E4%B8%8B%E5%8D%8810.19.05.png" alt="截屏2022-03-05 下午10.19.05"></p>
+</li>
+</ul>
+<p>如此一来我们只需要维护<code>「订阅变更日志」中间件</code>的高可用和稳定性即可</p>
+<blockquote>
+<p>这里是否需要引入「订阅变更日志」的中间件尚存疑惑，虽然解决了客户端「写MQ」操作失败的问题，但同时也需要维护一个新的中间件</p>
+<p>若是数据库本身支持订阅Binlog日志还好，亦或许是维护「订阅」中间件工作量相比于维护「写MQ」操作失败操作更少？</p>
+<p>笔者还是一名学生，无太多开发经验，这里留个坑</p>
+</blockquote>
+<h2 id="强一致性问题"><a href="#强一致性问题" class="headerlink" title="强一致性问题"></a>强一致性问题</h2><p>如果别人问你是否能做到<strong>强一致性</strong>，按照我现在的认知来说，答案似乎是<strong>可以但没必要</strong></p>
+<p>引入缓存的目的就是<strong>提高读写性能</strong>，除非财大气粗直接拿缓存作为数据库，但是也得考虑数据的备份、高可用等问题</p>
+<p>若达到强一致性，可以参考2PC、3PC等一致性协议，与分布式事务类似的是，高性能和强一致性无法兼得，只能面对不同场景下<strong>有所取舍</strong></p>
+<p>参考：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzIyOTYxNDI5OA==&amp;mid=2247487312&amp;idx=1&amp;sn=fa19566f5729d6598155b5c676eee62d&amp;chksm=e8beb8e5dfc931f3e35655da9da0b61c79f2843101c130cf38996446975014f958a6481aacf1&amp;scene=178&amp;cur_album_id=1699766580538032128#rd">https://mp.weixin.qq.com/s?__biz=MzIyOTYxNDI5OA==&amp;mid=2247487312&amp;idx=1&amp;sn=fa19566f5729d6598155b5c676eee62d&amp;chksm=e8beb8e5dfc931f3e35655da9da0b61c79f2843101c130cf38996446975014f958a6481aacf1&amp;scene=178&amp;cur_album_id=1699766580538032128#rd</a></p>
+<p><a target="_blank" rel="noopener" href="https://javaguide.cn/database/redis/3-commonly-used-cache-read-and-write-strategies/">https://javaguide.cn/database/redis/3-commonly-used-cache-read-and-write-strategies/</a></p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>ZZGuo
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="http://www.superzzguo.com/2022/04/16/DB-DataConsistency/" title="谈谈缓存与数据库一致性问题">http://www.superzzguo.com/2022/04/16/DB-DataConsistency/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%9F%A5%E8%AF%86%E6%89%A9%E5%B1%95/" rel="tag"># 知识扩展</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/04/15/JUC-LockSupport/" rel="prev" title="简单谈谈JUC的LockSupport类">
+      <i class="fa fa-chevron-left"></i> 简单谈谈JUC的LockSupport类
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B0%88%E8%B0%88%E7%BC%93%E5%AD%98%E4%B8%8E%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98"><span class="nav-number">2.</span> <span class="nav-text">谈谈缓存与数据库一致性问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E8%AF%BB%E5%86%99%E7%AD%96%E7%95%A5"><span class="nav-number">2.1.</span> <span class="nav-text">一些读写策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%81%E8%B7%AF%E7%BC%93%E5%AD%98%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.1.1.</span> <span class="nav-text">旁路缓存模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C"><span class="nav-number">2.1.1.1.</span> <span class="nav-text">基础操作</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%BB%E5%86%99%E7%A9%BF%E9%80%8F%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.1.2.</span> <span class="nav-text">读写穿透模式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C-1"><span class="nav-number">2.1.2.1.</span> <span class="nav-text">基础操作</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B6%E4%BB%96"><span class="nav-number">2.1.2.2.</span> <span class="nav-text">其他</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%82%E6%AD%A5%E7%BC%93%E5%AD%98%E5%86%99%E5%85%A5"><span class="nav-number">2.1.3.</span> <span class="nav-text">异步缓存写入</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%81%E8%B7%AF%E7%BC%93%E5%AD%98%E6%A8%A1%E5%BC%8F%E7%9A%84%E5%8F%AF%E7%94%A8%E6%80%A7"><span class="nav-number">2.2.</span> <span class="nav-text">旁路缓存模式的可用性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E4%BD%BF%E7%94%A8%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93-%E6%9B%B4%E6%96%B0%E7%BC%93%E5%AD%98%E7%9A%84%E6%96%B9%E6%A1%88%E5%91%A2%EF%BC%9F"><span class="nav-number">2.2.1.</span> <span class="nav-text">为什么不使用更新数据库+更新缓存的方案呢？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%BA%E8%AF%81%E5%85%88%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93%EF%BC%8C%E5%90%8E%E5%88%A0%E9%99%A4%E7%BC%93%E5%AD%98%E6%96%B9%E6%A1%88%E7%9A%84%E4%BC%98%E8%B6%8A%E6%80%A7"><span class="nav-number">2.2.2.</span> <span class="nav-text">论证先更新数据库，后删除缓存方案的优越性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93%E3%80%81%E5%88%A0%E9%99%A4%E7%BC%93%E5%AD%98%E4%B8%A4%E6%AD%A5%E6%93%8D%E4%BD%9C%E7%9A%84%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7"><span class="nav-number">2.2.3.</span> <span class="nav-text">如何保证更新数据库、删除缓存两步操作的高可用性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%BA%E4%B8%80%E8%87%B4%E6%80%A7%E9%97%AE%E9%A2%98"><span class="nav-number">2.3.</span> <span class="nav-text">强一致性问题</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+
+
+      <div class="site-overview-wrap sidebar-panel">
+
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ZZGuo"
+      src="/images/head.jpeg">
+  <p class="site-author-name" itemprop="name">ZZGuo</p>
+  <div class="site-description" itemprop="description">饮茶先啦</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Super-ZZGuo" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Super-ZZGuo" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+
+      </div>
+
+      <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=86
+        src="//music.163.com/outchain/player?type=2&id=65592&auto=1&height=66">
+      </iframe>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ZZGuo</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,0' opacity='0.5' zIndex='-1' count='150' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/wanko.model.json"},"display":{"position":"right","width":200,"height":400},"mobile":{"show":true},"log":false});</script></body>
+</html>
